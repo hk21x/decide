@@ -1,0 +1,17 @@
+services:
+  decide:
+    image: ghcr.io/OWNER/decide:latest # replace OWNER once the repo exists
+    container_name: decide
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data
+    environment:
+      - PUID=1000
+      - PGID=1000
+      # Optional declarative config — skips the in-browser setup wizard:
+      # - PLEX_URL=http://192.168.1.10:32400
+      # - PLEX_TOKEN=your-token
+      # - PLEX_SECTIONS=1
+      # - ART_CACHE_MB=500
+    restart: unless-stopped

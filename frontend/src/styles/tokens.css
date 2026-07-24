@@ -1,0 +1,99 @@
+/* decide design tokens — palette drawn from the logo (purple/pink film
+   reels on a dark ground). The posters are still the design; everything
+   here stays quiet. Cream (--stub) appears ONLY as ticket-stub stock, never
+   as a page background. "Not tonight" stays muted — passing on a film is
+   not rejection, so the pass action never gets the hot pink. */
+
+@import "@fontsource-variable/archivo";
+@import "@fontsource-variable/public-sans";
+@import "@fontsource/space-mono/400.css";
+@import "@fontsource/space-mono/700.css";
+@import "tailwindcss";
+
+@theme {
+  --color-house: #151021; /* violet-black — page ground */
+  --color-riser: #231a38; /* card surface, sheets, raised panels */
+  --color-spool: #8b6cd9; /* reel purple — brand marks, focus, links */
+  --color-bulb: #f2637a; /* reel pink-red — the "Tonight" action */
+  --color-seat: #7a7396; /* muted violet-grey — the "Not tonight" action */
+  --color-stub: #efe9df; /* ticket card stock — stubs only */
+  --color-ink: #0d0916; /* type on stub stock — never flips */
+  --color-press: #0d0916; /* label on filled action buttons */
+  --color-hairline: #362b52;
+  --color-fog: #a79fc4; /* muted body text on house */
+
+  --font-display: "Archivo Variable", "Arial Narrow", sans-serif;
+  --font-body: "Public Sans Variable", system-ui, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, monospace;
+
+  /* Type scale: 12 / 14 / 16 / 20 / 28 / 44 */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 28px;
+  --text-2xl: 44px;
+}
+
+/* Light theme: violet-tinted paper, same identity. --color-ink never flips
+   (it's the constant near-black for ticket stock and pink buttons), and the
+   cream ticket material is pinned in the components that use it. */
+:root[data-theme="light"] {
+  --color-house: #f7f5fa; /* paper ground */
+  --color-riser: #ffffff; /* cards and panels */
+  --color-spool: #6a4bc4; /* purple, darkened for contrast on paper */
+  --color-bulb: #db4762; /* pink-red, darkened for contrast on paper */
+  --color-seat: #6a6386;
+  --color-stub: #221838; /* primary text flips to deep violet ink */
+  --color-hairline: #ddd7e7;
+  --color-fog: #6e6690;
+  --color-press: #ffffff; /* darker button fills need white labels */
+}
+
+html {
+  background: var(--color-house);
+  overscroll-behavior: none;
+}
+
+body {
+  margin: 0;
+  background: var(--color-house);
+  color: var(--color-stub);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* Display type: Archivo pulled to condensed width, per §8.2 */
+.type-display {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 75;
+  font-stretch: 75%;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+
+.type-mono {
+  font-family: var(--font-mono);
+}
+
+button {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-spool);
+  outline-offset: 2px;
+}
+
+/* The deck has nothing to scroll: the browser gets NO touch gestures on
+   the cards — every pointer movement belongs to the drag. (pan-y here let
+   iOS claim diagonal swipes as scrolls and drop them.) */
+.swipe-surface {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}

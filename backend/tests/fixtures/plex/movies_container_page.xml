@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MediaContainer size="3" totalSize="2504" offset="0" allowSync="1" art="/:/resources/movie-fanart.jpg" identifier="com.plexapp.plugins.library" librarySectionID="1" librarySectionTitle="Movies" librarySectionUUID="d62a4a0d-ef15-450f-b137-e5e6bd78e7a3" mediaTagPrefix="/system/bundle/media/flags/" mediaTagVersion="1783932891" thumb="/:/resources/movie.png" title1="Movies" title2="All Movies" viewGroup="movie" viewMode="65592">
+<Video ratingKey="79106" key="/library/metadata/79106" guid="plex://movie/5f40dd63bf3e560040d8b5e9" slug="amfad-all-my-friends-are-dead" studio="Digital Riot Media" type="movie" title="#AMFAD: All My Friends Are Dead" originalTitle="#AMFAD All My Friends Are Dead" contentRating="gb/18" contentRatingAge="17" summary="A group of college friends rent an Airbnb for the biggest music festival of the year. A weekend of partying quickly takes a turn, as their past regrets come back and haunt them. A killer then tries to avenge a forgotten, lost friend." rating="5.0" audienceRating="4.2" year="2024" tagline="Party till you drop" thumb="/library/metadata/79106/thumb/1783732336" art="/library/metadata/79106/art/1783732336" duration="5464704" originallyAvailableAt="2024-07-24" addedAt="1778329862" updatedAt="1783732336" audienceRatingImage="rottentomatoes://image.rating.spilled" primaryExtraKey="/library/metadata/79111" ratingImage="rottentomatoes://image.rating.rotten">
+<Media id="138619" duration="5464704" bitrate="2444" width="1920" height="800" aspectRatio="2.35" audioChannels="6" audioCodec="eac3" videoCodec="hevc" videoResolution="1080" container="mkv" videoFrameRate="24p" videoProfile="/media/movies/scrubbed.mkv" hasVoiceActivity="0">
+<Part id="138619" key="/library/parts/138619/1773879838/file.mkv" duration="5464704" file="/media/movies/scrubbed.mkv" size="1671956402" container="mkv" videoProfile="/media/movies/scrubbed.mkv" />
+</Media>
+<Image alt="#AMFAD: All My Friends Are Dead" type="coverPoster" url="/library/metadata/79106/thumb/1783732336" />
+<Image alt="#AMFAD: All My Friends Are Dead" type="background" url="/library/metadata/79106/art/1783732336" />
+<Image alt="#AMFAD: All My Friends Are Dead" type="clearLogo" url="/library/metadata/79106/clearLogo/1783732336" />
+<Image alt="#AMFAD: All My Friends Are Dead" type="backgroundSquare" url="/library/metadata/79106/squareArt/1783732336" />
+<UltraBlurColors topLeft="361e58" topRight="693579" bottomRight="3a2a67" bottomLeft="381d58" />
+<Guid id="imdb://tt9567458" />
+<Guid id="tmdb://1090323" />
+<Guid id="tvdb://359066" />
+<Genre tag="Horror" />
+<Genre tag="Thriller" />
+<Country tag="United States of America" />
+<Director tag="Marcus Dunstan" />
+<Writer tag="John Baldecchi" />
+<Writer tag="Jessica Sarah Flaum" />
+<Role tag="Jade Pettyjohn" />
+<Role tag="JoJo Siwa" />
+<Role tag="Justin Derickson" />
+</Video>
+<Video ratingKey="65552" key="/library/metadata/65552" guid="plex://movie/5d7768265af944001f1f6977" slug="2-fast-2-furious" studio="Ardustry Entertainment" type="movie" title="2 Fast 2 Furious" contentRating="gb/12A" contentRatingAge="14" summary="EX LAPD cop Brian O&#39;Conner (Paul Walker) teams up with his ex-con friend Roman Pearce (Tyrese Gibson) and works with undercover U.S. Customs Service agent Monica Fuentes (Eva Mendes) to bring Miami-based drug lord Carter Verone (Cole Hauser) down." rating="3.7" audienceRating="5.0" year="2003" tagline="How fast do you like it?" thumb="/library/metadata/65552/thumb/1783732314" art="/library/metadata/65552/art/1783732314" duration="6461792" originallyAvailableAt="2003-06-05" addedAt="1778218996" updatedAt="1783732314" audienceRatingImage="rottentomatoes://image.rating.spilled" chapterSource="media" primaryExtraKey="/library/metadata/87875" ratingImage="rottentomatoes://image.rating.rotten">
+<Media id="105323" duration="6461792" bitrate="9481" width="1920" height="1080" aspectRatio="1.78" audioChannels="8" audioCodec="dca" videoCodec="hevc" videoResolution="1080" container="mkv" videoFrameRate="24p" audioProfile="/media/movies/scrubbed.mkv" videoProfile="/media/movies/scrubbed.mkv" hasVoiceActivity="0">
+<Part id="105323" key="/library/parts/105323/1778241628/file.mkv" duration="6461792" file="/media/movies/scrubbed.mkv" size="7667112359" audioProfile="/media/movies/scrubbed.mkv" container="mkv" videoProfile="/media/movies/scrubbed.mkv" />
+</Media>
+<Image alt="2 Fast 2 Furious" type="coverPoster" url="/library/metadata/65552/thumb/1783732314" />
+<Image alt="2 Fast 2 Furious" type="background" url="/library/metadata/65552/art/1783732314" />
+<Image alt="2 Fast 2 Furious" type="clearLogo" url="/library/metadata/65552/clearLogo/1783732314" />
+<Image alt="2 Fast 2 Furious" type="backgroundSquare" url="/library/metadata/65552/squareArt/1783732314" />
+<UltraBlurColors topLeft="162e4f" topRight="30618f" bottomRight="345e96" bottomLeft="1c2c56" />
+<Guid id="imdb://tt0322259" />
+<Guid id="tmdb://584" />
+<Guid id="tvdb://20800" />
+<Genre tag="Action" />
+<Genre tag="Crime" />
+<Country tag="Germany" />
+<Country tag="United States of America" />
+<Director tag="John Singleton" />
+<Writer tag="Gary Scott Thompson" />
+<Writer tag="Michael Brandt" />
+<Role tag="Paul Walker" />
+<Role tag="Tyrese Gibson" />
+<Role tag="Eva Mendes" />
+</Video>
+<Video ratingKey="84463" key="/library/metadata/84463" guid="plex://movie/5d7769a023d5a3001f4fa465" slug="2-guns" studio="Universal Pictures" type="movie" title="2 Guns" contentRating="gb/15" contentRatingAge="17" summary="A DEA agent and an undercover Naval Intelligence officer who have been tasked with investigating one another find they have been set up by the mob -- the very organization the two men believe they have been stealing money from." rating="6.4" audienceRating="6.6" year="2013" tagline="Never rob a bank across from a diner with the best donuts in three counties." thumb="/library/metadata/84463/thumb/1783557087" art="/library/metadata/84463/art/1783557087" duration="6555360" originallyAvailableAt="2013-08-01" addedAt="1778330050" updatedAt="1783557087" audienceRatingImage="rottentomatoes://image.rating.upright" chapterSource="media" primaryExtraKey="/library/metadata/84486" ratingImage="rottentomatoes://image.rating.ripe">
+<Media id="151363" duration="6555360" bitrate="2902" width="1920" height="1080" aspectRatio="1.78" audioChannels="6" audioCodec="ac3" videoCodec="hevc" videoResolution="1080" container="mkv" videoFrameRate="24p" videoProfile="/media/movies/scrubbed.mkv" hasVoiceActivity="0">
+<Part id="151363" key="/library/parts/151363/1508883792/file.mkv" duration="6555360" file="/media/movies/scrubbed.mkv" size="2379859914" container="mkv" videoProfile="/media/movies/scrubbed.mkv" />
+</Media>
+<Image alt="2 Guns" type="coverPoster" url="/library/metadata/84463/thumb/1783557087" />
+<Image alt="2 Guns" type="background" url="/library/metadata/84463/art/1783557087" />
+<Image alt="2 Guns" type="clearLogo" url="/library/metadata/84463/clearLogo/1783557087" />
+<Image alt="2 Guns" type="backgroundSquare" url="/library/metadata/84463/squareArt/1783557087" />
+<UltraBlurColors topLeft="452406" topRight="894b14" bottomRight="5b3f10" bottomLeft="7d5412" />
+<Guid id="imdb://tt1272878" />
+<Guid id="tmdb://136400" />
+<Guid id="tvdb://1783" />
+<Genre tag="Thriller" />
+<Genre tag="Action" />
+<Country tag="United States of America" />
+<Director tag="Baltasar Korm&#225;kur" />
+<Writer tag="Blake Masters" />
+<Writer tag="Steven Grant" />
+<Role tag="Denzel Washington" />
+<Role tag="Mark Wahlberg" />
+<Role tag="Paula Patton" />
+</Video>
+</MediaContainer>
