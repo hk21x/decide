@@ -39,6 +39,7 @@ _FILTER_LABELS = {
     "max_runtime": "the runtime limit",
     "min_rating": "the minimum rating",
     "certificate": "the certificate ceiling",
+    "collection": "the collection filter",
 }
 
 
@@ -73,7 +74,7 @@ class DeckTooSmall(Exception):
 def _load_candidates(conn: sqlite3.Connection) -> list[sqlite3.Row]:
     return conn.execute(
         "SELECT id, guid, imdb_id, tmdb_id, year, runtime_min, content_rating, "
-        "audience_rating, genres_json, view_count FROM items "
+        "audience_rating, genres_json, collections_json, view_count FROM items "
         "WHERE unusable = 0 ORDER BY id"
     ).fetchall()
 
@@ -104,6 +105,9 @@ def _passes(row: sqlite3.Row, f: DeckFilters) -> bool:
     if f.certificate is not None:
         rank = cert_rank(row["content_rating"])
         if rank is None or rank > _CEILING_RANKS[f.certificate]:
+            return False
+    if f.collection is not None:
+        if f.collection not in json.loads(row["collections_json"] or "[]"):
             return False
     return True
 
@@ -146,6 +150,8 @@ def _relaxations(f: DeckFilters) -> list[tuple[str, DeckFilters]]:
         out.append(("min_rating", f.model_copy(update={"min_rating": None})))
     if f.certificate is not None:
         out.append(("certificate", f.model_copy(update={"certificate": None})))
+    if f.collection is not None:
+        out.append(("collection", f.model_copy(update={"collection": None})))
     return out
 
 

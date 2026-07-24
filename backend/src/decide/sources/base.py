@@ -52,6 +52,7 @@ class MovieRecord:
     genres: list[str] = field(default_factory=list)
     directors: list[str] = field(default_factory=list)
     cast: list[dict] = field(default_factory=list)
+    collections: list[str] = field(default_factory=list)
     thumb: str | None = None
     art: str | None = None
     view_count: int = 0
@@ -86,6 +87,12 @@ class MediaSource(Protocol):
         incremental sync (incremental filters cannot see removals)."""
         ...
 
+    def collection_memberships(self, section_keys: list[str]) -> dict[str, list[str]]:
+        """item id -> collection titles. Fills the gap where container
+        listings omit per-item Collection tags. Full-sync only (one request
+        per collection)."""
+        ...
+
     def fetch_artwork(
         self, image_path: str, width: int, height: int
     ) -> tuple[bytes, str]:
@@ -94,6 +101,21 @@ class MediaSource(Protocol):
         ...
 
     def deep_link(self, item_id: str) -> DeepLink: ...
+
+    def list_players(self) -> list["PlayerInfo"]:
+        """Controllable playback clients currently visible to the server."""
+        ...
+
+    def play_on(self, item_id: str, player_id: str) -> None:
+        """Start playback of an item on a named player."""
+        ...
+
+
+@dataclass
+class PlayerInfo:
+    id: str
+    name: str
+    product: str | None = None
 
 
 ArtKind = Literal["poster", "backdrop"]

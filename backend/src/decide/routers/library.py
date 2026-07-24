@@ -25,6 +25,7 @@ def filters_from_query(
     max_runtime: int | None = Query(default=None, ge=30, le=600),
     min_rating: float | None = Query(default=None, ge=0, le=10),
     certificate: str | None = Query(default=None),
+    collection: str | None = Query(default=None, max_length=200),
 ) -> DeckFilters:
     return DeckFilters(
         unwatched_only=unwatched_only,
@@ -34,6 +35,7 @@ def filters_from_query(
         max_runtime=max_runtime,
         min_rating=min_rating,
         certificate=certificate,  # validated by the model
+        collection=collection or None,
     )
 
 
@@ -67,8 +69,20 @@ async def library_filters() -> LibraryFilters:
                 "WHERE year IS NOT NULL AND unusable = 0 ORDER BY 1"
             )
         ]
+        # Collections with at least 2 usable films — a 1-film deck is no deck.
+        collections = [
+            r[0]
+            for r in conn.execute(
+                "SELECT value, COUNT(*) AS n FROM items, "
+                "json_each(items.collections_json) WHERE items.unusable = 0 "
+                "GROUP BY value HAVING n >= 2 ORDER BY value"
+            )
+        ]
         return LibraryFilters(
-            genres=genres, decades=decades, certificates=deck_service.CEILING_OPTIONS
+            genres=genres,
+            decades=decades,
+            certificates=deck_service.CEILING_OPTIONS,
+            collections=collections,
         )
 
     return await db.run(_read)

@@ -15,7 +15,14 @@ from urllib.parse import quote
 
 import requests
 
-from .base import DeepLink, MovieRecord, ProgressCallback, Section, ServerInfo
+from .base import (
+    DeepLink,
+    MovieRecord,
+    PlayerInfo,
+    ProgressCallback,
+    Section,
+    ServerInfo,
+)
 
 log = logging.getLogger(__name__)
 
@@ -241,6 +248,44 @@ class PlexSource:
         resp.raise_for_status()
         return resp.content, resp.headers.get("Content-Type", "image/jpeg")
 
+    def collection_memberships(self, section_keys: list[str]) -> dict[str, list[str]]:
+        server = self._server()
+        memberships: dict[str, list[str]] = {}
+        for key in section_keys:
+            section = server.library.sectionByID(int(key))
+            for collection in section.collections():
+                title = getattr(collection, "title", None)
+                if not title:
+                    continue
+                try:
+                    members = collection.items()
+                except Exception:  # a broken collection shouldn't kill the sync
+                    continue
+                for member in members:
+                    memberships.setdefault(str(member.ratingKey), []).append(title)
+        return memberships
+
+    def list_players(self) -> list[PlayerInfo]:
+        players = []
+        for client in self._server().clients():
+            players.append(
+                PlayerInfo(
+                    id=client.machineIdentifier,
+                    name=client.title,
+                    product=getattr(client, "product", None),
+                )
+            )
+        return players
+
+    def play_on(self, item_id: str, player_id: str) -> None:
+        server = self._server()
+        for client in server.clients():
+            if client.machineIdentifier == player_id:
+                client.proxyThroughServer()
+                client.playMedia(server.fetchItem(int(item_id)))
+                return
+        raise RuntimeError("That player is no longer visible to the Plex server.")
+
     def deep_link(self, item_id: str) -> DeepLink:
         mid = self._server().machineIdentifier
         key = quote(f"/library/metadata/{item_id}", safe="")
@@ -296,6 +341,9 @@ def _to_record(movie) -> MovieRecord:
             {"name": r.tag, "role": getattr(r, "role", None)}
             for r in roles
             if getattr(r, "tag", None)
+        ],
+        collections=[
+            t.tag for t in getattr(movie, "collections", None) or [] if getattr(t, "tag", None)
         ],
         thumb=getattr(movie, "thumb", None),
         art=getattr(movie, "art", None),

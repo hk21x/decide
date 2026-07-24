@@ -31,6 +31,7 @@ def make_movie(i: int, **overrides) -> MovieRecord:
         genres=["Drama", "Thriller"],
         directors=[f"Director {i}"],
         cast=[{"name": f"Actor {i}", "role": "Lead"}],
+        collections=[],
         thumb=f"/library/metadata/{i}/thumb/1",
         art=f"/library/metadata/{i}/art/1",
         view_count=0,
@@ -68,6 +69,19 @@ class FakeSource:
 
     def fetch_artwork(self, image_path, width, height):
         return b"\xff\xd8\xff-fake-jpeg", "image/jpeg"
+
+    def collection_memberships(self, section_keys):
+        out = {}
+        for movie in self.movies:
+            for name in movie.collections:
+                out.setdefault(movie.id, []).append(name)
+        return out
+
+    def list_players(self):
+        return []
+
+    def play_on(self, item_id, player_id):
+        raise RuntimeError("no players in tests")
 
     def deep_link(self, item_id):
         return DeepLink(

@@ -93,12 +93,14 @@ class DeckFilters(BaseModel):
     max_runtime: int | None = Field(default=None, ge=30, le=600)
     min_rating: float | None = Field(default=None, ge=0, le=10)
     certificate: Literal["U", "PG", "12A", "15", "18"] | None = None
+    collection: str | None = Field(default=None, max_length=200)
 
 
 class LibraryFilters(BaseModel):
     genres: list[str]
     decades: list[int]
     certificates: list[str]
+    collections: list[str] = Field(default_factory=list)
 
 
 class PreviewCount(BaseModel):
@@ -134,6 +136,7 @@ class SessionSummary(BaseModel):
     expires_at: int
     participants: list[ParticipantEntry]
     filters: DeckFilters
+    crowned_item_id: str | None = None
 
 
 class JoinRequest(BaseModel):
@@ -209,3 +212,65 @@ class ProgressResponse(BaseModel):
     participants: list[ProgressEntry]
     match_count: int
     all_complete: bool
+
+
+class PairStat(BaseModel):
+    a_id: str
+    a_name: str
+    b_id: str
+    b_name: str
+    both_swiped: int
+    agreed: int
+    both_right: int
+    pct: int  # agreed / both_swiped, rounded
+
+
+class SessionStats(BaseModel):
+    session_id: str
+    deck_size: int
+    pairs: list[PairStat]
+
+
+class CrownRequest(BaseModel):
+    item_id: str
+
+
+class CrownResponse(BaseModel):
+    crowned_item_id: str
+
+
+class AlbumSaveRequest(BaseModel):
+    item_id: str
+    crowned: bool = False
+
+
+class AlbumEntry(BaseModel):
+    session_id: str
+    item_id: str
+    title: str
+    year: int | None = None
+    runtime_min: int | None = None
+    content_rating: str | None = None
+    names: list[str]
+    matched_at: int
+    saved_at: int
+    crowned: bool
+
+
+class AlbumResponse(BaseModel):
+    entries: list[AlbumEntry]
+
+
+class PlayerEntry(BaseModel):
+    id: str
+    name: str
+    product: str | None = None
+
+
+class PlayersResponse(BaseModel):
+    players: list[PlayerEntry]
+
+
+class PlayRequest(BaseModel):
+    item_id: str
+    player_id: str

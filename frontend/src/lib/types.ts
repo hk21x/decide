@@ -8,6 +8,7 @@ export interface DeckFilters {
   max_runtime: number | null;
   min_rating: number | null;
   certificate: "U" | "PG" | "12A" | "15" | "18" | null;
+  collection: string | null;
 }
 
 export const defaultFilters: DeckFilters = {
@@ -18,12 +19,14 @@ export const defaultFilters: DeckFilters = {
   max_runtime: null,
   min_rating: null,
   certificate: null,
+  collection: null,
 };
 
 export interface LibraryFilters {
   genres: string[];
   decades: number[];
   certificates: string[];
+  collections: string[];
 }
 
 export interface LibraryStatus {
@@ -142,6 +145,7 @@ export interface SessionSummary {
   expires_at: number;
   participants: ParticipantEntry[];
   filters: DeckFilters;
+  crowned_item_id: string | null;
 }
 
 export interface JoinResponse {
@@ -176,4 +180,40 @@ export interface TooFewFilms {
   culprit: string | null;
   would_yield: number | null;
   message: string;
+}
+
+export interface PairStat {
+  a_id: string;
+  a_name: string;
+  b_id: string;
+  b_name: string;
+  both_swiped: number;
+  agreed: number;
+  both_right: number;
+  pct: number;
+}
+
+export interface SessionStats {
+  session_id: string;
+  deck_size: number;
+  pairs: PairStat[];
+}
+
+export interface AlbumEntry {
+  session_id: string;
+  item_id: string;
+  title: string;
+  year: number | null;
+  runtime_min: number | null;
+  content_rating: string | null;
+  names: string[];
+  matched_at: number;
+  saved_at: number;
+  crowned: boolean;
+}
+
+export interface PlayerEntry {
+  id: string;
+  name: string;
+  product: string | null;
 }

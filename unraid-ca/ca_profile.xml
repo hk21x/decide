@@ -1,0 +1,14 @@
+<CommunityApplications>
+  <Profile>
+Templates for apps maintained by [hk21x](https://github.com/hk21x).
+
+**decide** — Swipe. Decide. Watch. A self-hosted swipe-to-match film picker
+for your Plex library: friends swipe the same small deck, unanimous
+right-swipes become matches, a Final Round crowns tonight's film, and ticket
+stubs remember your movie nights.
+
+Support and issues: https://github.com/hk21x/decide/issues
+  </Profile>
+  <Icon>https://raw.githubusercontent.com/hk21x/unraid-templates/main/icon.svg</Icon>
+  <WebPage>https://github.com/hk21x/decide</WebPage>
+</CommunityApplications>

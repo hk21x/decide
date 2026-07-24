@@ -26,12 +26,14 @@ INCREMENTAL_OVERLAP_S = 300
 _UPSERT = """
 INSERT INTO items (id, guid, imdb_id, tmdb_id, title, year, tagline, summary,
                    runtime_min, content_rating, audience_rating, genres_json,
-                   directors_json, cast_json, thumb, art, view_count,
-                   last_viewed_at, added_at, updated_at, unusable, synced_at)
+                   directors_json, cast_json, collections_json, thumb, art,
+                   view_count, last_viewed_at, added_at, updated_at, unusable,
+                   synced_at)
 VALUES (:id, :guid, :imdb_id, :tmdb_id, :title, :year, :tagline, :summary,
         :runtime_min, :content_rating, :audience_rating, :genres_json,
-        :directors_json, :cast_json, :thumb, :art, :view_count,
-        :last_viewed_at, :added_at, :updated_at, :unusable, :synced_at)
+        :directors_json, :cast_json, :collections_json, :thumb, :art,
+        :view_count, :last_viewed_at, :added_at, :updated_at, :unusable,
+        :synced_at)
 ON CONFLICT(id) DO UPDATE SET
     guid = excluded.guid, imdb_id = excluded.imdb_id, tmdb_id = excluded.tmdb_id,
     title = excluded.title, year = excluded.year, tagline = excluded.tagline,
@@ -39,6 +41,7 @@ ON CONFLICT(id) DO UPDATE SET
     content_rating = excluded.content_rating,
     audience_rating = excluded.audience_rating, genres_json = excluded.genres_json,
     directors_json = excluded.directors_json, cast_json = excluded.cast_json,
+    collections_json = excluded.collections_json,
     thumb = excluded.thumb, art = excluded.art, view_count = excluded.view_count,
     last_viewed_at = excluded.last_viewed_at, added_at = excluded.added_at,
     updated_at = excluded.updated_at, unusable = excluded.unusable,
@@ -62,6 +65,7 @@ def _row(rec: MovieRecord, synced_at: int) -> dict:
         "genres_json": json.dumps(rec.genres),
         "directors_json": json.dumps(rec.directors),
         "cast_json": json.dumps(rec.cast),
+        "collections_json": json.dumps(rec.collections),
         "thumb": rec.thumb,
         "art": rec.art,
         "view_count": rec.view_count,
@@ -120,6 +124,27 @@ def run_sync_blocking(
             "DELETE FROM items WHERE synced_at < ? OR synced_at IS NULL", (started_ns,)
         )
         deleted = cur.rowcount
+        conn.commit()
+
+        # Collection tags are often missing from container listings, so on a
+        # full sync we also walk the section's collections and merge their
+        # memberships in (one request per collection — full sync only).
+        try:
+            memberships = source.collection_memberships(section_keys)
+        except Exception:
+            log.exception("collection sweep failed; per-item tags only")
+            memberships = {}
+        for item_id, names in memberships.items():
+            row = conn.execute(
+                "SELECT collections_json FROM items WHERE id = ?", (item_id,)
+            ).fetchone()
+            if row is None:
+                continue
+            merged = sorted(set(json.loads(row["collections_json"] or "[]")) | set(names))
+            conn.execute(
+                "UPDATE items SET collections_json = ? WHERE id = ?",
+                (json.dumps(merged), item_id),
+            )
         conn.commit()
     else:
         # Incremental filters cannot see removals: if the source total no

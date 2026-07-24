@@ -11,7 +11,17 @@ from fastapi.staticfiles import StaticFiles
 
 from . import config, db, jobs, migrations, security
 from .events import ConnectionManager
-from .routers import art, health, library, live, sessions, settings as settings_router, setup
+from .routers import (
+    album,
+    art,
+    health,
+    library,
+    live,
+    players,
+    sessions,
+    settings as settings_router,
+    setup,
+)
 from .services.artcache import ArtCache
 from .services.sync import SyncCoordinator
 from .sources import plex
@@ -98,6 +108,8 @@ def create_app(settings: config.Settings | None = None) -> FastAPI:
     app.include_router(art.router)
     app.include_router(live.router)
     app.include_router(settings_router.router)
+    app.include_router(album.router)
+    app.include_router(players.router)
 
     if settings.static_dir and settings.static_dir.exists():
         static_dir = settings.static_dir

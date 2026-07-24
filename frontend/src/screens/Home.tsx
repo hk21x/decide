@@ -73,6 +73,9 @@ export function HomeScreen() {
         >
           Swipe solo
         </Link>
+        <Link to="/album" className="mt-2 text-center text-sm text-fog">
+          🎟 Stub album
+        </Link>
       </div>
     </div>
   );

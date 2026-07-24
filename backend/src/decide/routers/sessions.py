@@ -19,6 +19,8 @@ from .. import config, db, security
 from ..models import (
     CreateSessionRequest,
     CreateSessionResponse,
+    CrownRequest,
+    CrownResponse,
     DeckFilters,
     DeckItem,
     DeckResponse,
@@ -26,9 +28,11 @@ from ..models import (
     JoinResponse,
     MatchEntry,
     MatchesResponse,
+    PairStat,
     ParticipantEntry,
     ProgressEntry,
     ProgressResponse,
+    SessionStats,
     SessionSummary,
     SwipeBatch,
     SwipeResult,
@@ -80,6 +84,7 @@ def _summary(session: sqlite3.Row) -> SessionSummary:
             for p in _participants(session["id"])
         ],
         filters=DeckFilters(**json.loads(session["filters_json"])),
+        crowned_item_id=session["crowned_item_id"],
     )
 
 
@@ -423,6 +428,85 @@ async def get_matches(session_id: str, request: Request):
         return MatchesResponse(session_id=session_id, matches=entries)
 
     return await db.run(_read)
+
+
+@router.get("/{session_id}/stats", response_model=SessionStats)
+async def get_stats(session_id: str, request: Request):
+    """Pairwise taste agreement — the end-of-night compatibility line."""
+    await _current_participant(session_id, request)
+    session = await db.run(_load_session, session_id)
+    deck_size = len(json.loads(session["deck_json"]))
+
+    def _read() -> list[PairStat]:
+        conn = db.connect()
+        names = {
+            p["id"]: p["display_name"] for p in _participants(session_id)
+        }
+        rows = conn.execute(
+            "SELECT s1.participant_id AS a, s2.participant_id AS b, "
+            "COUNT(*) AS both_swiped, "
+            "SUM(CASE WHEN s1.direction = s2.direction THEN 1 ELSE 0 END) AS agreed, "
+            "SUM(CASE WHEN s1.direction = 1 AND s2.direction = 1 THEN 1 ELSE 0 END) "
+            "AS both_right "
+            "FROM swipes s1 JOIN swipes s2 ON s1.session_id = s2.session_id "
+            "AND s1.item_id = s2.item_id AND s1.participant_id < s2.participant_id "
+            "WHERE s1.session_id = ? GROUP BY a, b",
+            (session_id,),
+        ).fetchall()
+        pairs = []
+        for row in rows:
+            if row["a"] not in names or row["b"] not in names:
+                continue
+            pairs.append(
+                PairStat(
+                    a_id=row["a"],
+                    a_name=names[row["a"]],
+                    b_id=row["b"],
+                    b_name=names[row["b"]],
+                    both_swiped=row["both_swiped"],
+                    agreed=row["agreed"],
+                    both_right=row["both_right"],
+                    pct=round(100 * row["agreed"] / row["both_swiped"])
+                    if row["both_swiped"]
+                    else 0,
+                )
+            )
+        return pairs
+
+    return SessionStats(
+        session_id=session_id, deck_size=deck_size, pairs=await db.run(_read)
+    )
+
+
+@router.post("/{session_id}/crown", response_model=CrownResponse)
+async def crown(session_id: str, body: CrownRequest, request: Request):
+    """The Final Round verdict: one film, crowned for everyone."""
+    await _current_participant(session_id, request)
+    await db.run(_load_session, session_id)
+
+    def _crown() -> bool:
+        conn = db.connect()
+        is_match = conn.execute(
+            "SELECT 1 FROM matches WHERE session_id = ? AND item_id = ?",
+            (session_id, body.item_id),
+        ).fetchone()
+        if is_match is None:
+            return False
+        conn.execute(
+            "UPDATE sessions SET crowned_item_id = ? WHERE id = ?",
+            (body.item_id, session_id),
+        )
+        conn.commit()
+        return True
+
+    if not await db.run(_crown):
+        raise HTTPException(
+            status_code=400, detail="Only a matched film can be crowned."
+        )
+    await request.app.state.events.broadcast(
+        session_id, {"type": "crowned", "item_id": body.item_id}
+    )
+    return CrownResponse(crowned_item_id=body.item_id)
 
 
 @router.get("/{session_id}/progress", response_model=ProgressResponse)

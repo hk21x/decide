@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>decide</Name>
+  <Repository>ghcr.io/hk21x/decide:latest</Repository>
+  <Registry>https://github.com/hk21x/decide/pkgs/container/decide</Registry>
+  <Network>bridge</Network>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/hk21x/decide/issues</Support>
+  <Project>https://github.com/hk21x/decide</Project>
+  <ReadMe>https://github.com/hk21x/decide#readme</ReadMe>
+  <TemplateURL>https://raw.githubusercontent.com/hk21x/unraid-templates/main/templates/decide.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/hk21x/decide/main/frontend/public/decide-icon-512.png</Icon>
+  <License>MIT</License>
+  <MinVer>6.10</MinVer>
+  <Category>MediaApp:Video Tools:Utilities</Category>
+  <WebUI>http://[IP]:[PORT:8080]</WebUI>
+  <Overview>
+decide — Swipe. Decide. Watch.
+
+A self-hosted swipe-to-match film picker for your Plex library. Two to four people swipe through the same small, filtered deck of films from your server; when everyone says "Tonight" to the same one it's a match, a Final Round crowns the winner, and ticket stubs remember your movie nights.
+
+Features: mood-based filters (runtime, rating, certificate, collections), join codes with QR, live matches over WebSocket, async swiping (together or hours apart), taste-compatibility stats, a keepsake stub album, "Open in Plex" and play-on-your-TV, installable PWA with offline swiping, dark and light themes.
+
+Privacy: your Plex token never leaves the container — every Plex call, including artwork, is proxied by the backend. Once the library is synced, everything works on the LAN with no internet access.
+
+First run: open the WebUI and follow the setup wizard — sign in with Plex via a 4-character code at plex.tv/link (decide never asks for your password), pick your server and film libraries, and let the first sync run.
+
+decide is an independent project that works with Plex Media Server. It is not affiliated with or endorsed by Plex, Inc.
+  </Overview>
+  <Config Name="WebUI Port" Target="8080" Default="8080" Mode="tcp" Description="Port for the decide web app." Type="Port" Display="always" Required="true" Mask="false">8080</Config>
+  <Config Name="Data" Target="/data" Default="/mnt/user/appdata/decide" Mode="rw" Description="SQLite database and artwork cache." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/decide</Config>
+  <Config Name="PUID" Target="PUID" Default="99" Description="User ID to run as (99 = nobody on Unraid)." Type="Variable" Display="advanced" Required="false" Mask="false">99</Config>
+  <Config Name="PGID" Target="PGID" Default="100" Description="Group ID to run as (100 = users on Unraid)." Type="Variable" Display="advanced" Required="false" Mask="false">100</Config>
+  <Config Name="Artwork cache cap (MB)" Target="ART_CACHE_MB" Default="500" Description="Disk cap for the poster/backdrop cache under /data/art." Type="Variable" Display="advanced" Required="false" Mask="false">500</Config>
+  <Config Name="Plex URL (optional)" Target="PLEX_URL" Default="" Description="Optional declarative setup: your Plex server address (e.g. http://192.168.1.10:32400). Leave empty to use the in-browser setup wizard instead." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Plex token (optional)" Target="PLEX_TOKEN" Default="" Description="Optional declarative setup: an X-Plex-Token. Leave empty to sign in with the wizard's plex.tv/link flow instead." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="Plex sections (optional)" Target="PLEX_SECTIONS" Default="" Description="Optional declarative setup: comma-separated movie library section ids (e.g. 1,4)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+</Container>

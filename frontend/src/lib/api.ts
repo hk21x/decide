@@ -1,4 +1,5 @@
 import type {
+  AlbumEntry,
   CacheStats,
   CreateSessionResponse,
   DeckFilters,
@@ -9,7 +10,9 @@ import type {
   MatchesResponse,
   PinPoll,
   PinStart,
+  PlayerEntry,
   ProgressResponse,
+  SessionStats,
   SessionSummary,
   SetupServerResponse,
   SetupStatus,
@@ -102,6 +105,7 @@ export const api = {
     if (filters.max_runtime != null) params.set("max_runtime", String(filters.max_runtime));
     if (filters.min_rating != null) params.set("min_rating", String(filters.min_rating));
     if (filters.certificate) params.set("certificate", filters.certificate);
+    if (filters.collection) params.set("collection", filters.collection);
     return request<{ count: number }>(`/api/filters/preview?${params}`);
   },
 
@@ -134,6 +138,36 @@ export const api = {
 
   progress: (sessionId: string) =>
     request<ProgressResponse>(`/api/sessions/${sessionId}/progress`),
+
+  stats: (sessionId: string) =>
+    request<SessionStats>(`/api/sessions/${sessionId}/stats`),
+
+  crown: (sessionId: string, itemId: string) =>
+    request<{ crowned_item_id: string }>(`/api/sessions/${sessionId}/crown`, {
+      method: "POST",
+      body: JSON.stringify({ item_id: itemId }),
+    }),
+
+  saveToAlbum: (sessionId: string, itemId: string, crowned = false) =>
+    request<AlbumEntry>(`/api/sessions/${sessionId}/album`, {
+      method: "POST",
+      body: JSON.stringify({ item_id: itemId, crowned }),
+    }),
+
+  album: () => request<{ entries: AlbumEntry[] }>("/api/album"),
+
+  removeFromAlbum: (sessionId: string, itemId: string) =>
+    request<{ entries: AlbumEntry[] }>(`/api/album/${sessionId}/${itemId}`, {
+      method: "DELETE",
+    }),
+
+  players: () => request<{ players: PlayerEntry[] }>("/api/players"),
+
+  playOn: (itemId: string, playerId: string) =>
+    request<{ sent: boolean }>("/api/players/play", {
+      method: "POST",
+      body: JSON.stringify({ item_id: itemId, player_id: playerId }),
+    }),
 };
 
 export function posterUrl(itemId: string, w = 600, h = 900): string {

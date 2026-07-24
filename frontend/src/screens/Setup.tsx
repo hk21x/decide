@@ -21,6 +21,7 @@ const CULPRIT_CLEAR: Record<string, Partial<DeckFilters>> = {
   max_runtime: { max_runtime: null },
   min_rating: { min_rating: null },
   certificate: { certificate: null },
+  collection: { collection: null },
 };
 
 export function SetupScreen() {
@@ -252,6 +253,26 @@ export function SetupScreen() {
             )}
           </div>
         </div>
+
+        {available && available.collections.length > 0 && (
+          <div>
+            <h2 className="mb-2 text-sm font-semibold text-stub/80">
+              From a collection
+            </h2>
+            <select
+              value={filters.collection ?? ""}
+              onChange={(e) => patch({ collection: e.target.value || null })}
+              className="w-full rounded-xl border border-hairline bg-riser px-4 py-3 text-stub"
+            >
+              <option value="">Any — the whole library</option>
+              {available.collections.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {available && available.genres.length > 0 && (
           <div>
