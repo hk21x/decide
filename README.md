@@ -64,11 +64,18 @@ it. **decide** turns the choice into a game: two to four people swipe through
 the same small deck of films from your Plex library; when everyone says
 "Tonight" to the same one, it's a match — and a ticket stub prints.
 
-* **Small decks, not endless scrolling.** Filter by mood, runtime, rating and
-  certificate first; swipe 20–50 cards, not 3,000.
+* **Small decks, not endless scrolling.** Filter by mood, runtime, rating,
+  certificate — or build the deck from a Plex collection; swipe 20–50 cards,
+  not 3,000.
 * **Together or apart.** Everyone swipes the same frozen deck in the same
   order, live on the sofa or hours apart on the train. Matches land the
   moment you agree.
+* **It actually decides.** Too many matches? The **Final Round** runs them
+  head-to-head until one film is crowned — then open it in Plex, or send it
+  straight to the TV.
+* **Nights worth keeping.** Every session ends with a taste-compatibility
+  score ("You and Dee agreed on 7 of 30 — 23% tonight"), and stubs you keep
+  live on in the album long after sessions expire.
 * **Private by design.** Your Plex token never leaves the server — every Plex
   call, including artwork, is proxied by the backend. Once synced, it works
   on the LAN with no internet at all.
@@ -135,19 +142,29 @@ one image, one port, one SQLite file.
    asks for your password), pick your server and film libraries, and let the
    first sync run.
 
+**Unraid:** a Community Applications template ships in
+[hk21x/unraid-templates](https://github.com/hk21x/unraid-templates) — once
+accepted you'll find decide in the Apps tab; until then, the template XML
+works with Unraid's "Add Container → Template" as well.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Usage
 
 1. **Start a session** — pick a mood (or fine-tune genres), a runtime cap, a
-   minimum rating or a certificate ceiling for family nights. A live counter
-   shows how many films match.
+   minimum rating, a certificate ceiling for family nights, or a Plex
+   collection to deal from. A live counter shows how many films match.
 2. **Share the code** — a six-character join code, a copyable link, and a QR
    for whoever's on the sofa next to you.
 3. **Swipe** — right means "I'd watch this tonight". Tap ⓘ for the synopsis,
    cast and backdrop. Undo within five seconds if your thumb betrayed you.
 4. **Match** — unanimous right-swipes print a ticket stub in the shared
-   shortlist. Tap a stub to open the film straight in Plex.
+   shortlist, along with how compatible your taste turned out to be tonight.
+5. **Crown one** — the **Final Round** puts the matches head-to-head; pass
+   the phone, argue, tap winners until one film is crowned for everyone.
+   Open it in Plex, or play it on any Plex client the server can see.
+6. **Keep the stub** — kept stubs (and crowned winners) go to the 🎟 album,
+   a ticket wallet of past movie nights that outlives the sessions.
 
 On iPhone or Android, open the site and **Add to Home Screen** — decide
 installs as an app, and swipes made offline sync back when you reconnect.
@@ -211,6 +228,11 @@ If your Plex server runs in Docker and LAN clients appear as remote
 
 ## Roadmap
 
+- [x] Final Round — head-to-head bracket that crowns tonight's film
+- [x] Taste-compatibility stats
+- [x] The stub album — kept tickets that outlive sessions
+- [x] Decks from Plex collections
+- [x] Play the crowned film on a Plex client (TV, etc.)
 - [ ] Jellyfin support (media access already sits behind a `MediaSource`
       protocol — a `JellyfinSource` drops in without touching the rest)
 - [ ] Per-person Plex sign-in, so "unwatched" means *your* unwatched
