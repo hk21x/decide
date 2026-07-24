@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Local dev data (SQLite, art cache) — never commit
+backend/.dev-data/
+
+# Node / frontend build
+node_modules/
+frontend/dist/
+
+# OS
+.DS_Store
