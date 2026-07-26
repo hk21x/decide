@@ -178,25 +178,29 @@ class PlexSource:
             version=getattr(s, "version", None),
         )
 
-    def list_movie_sections(self) -> list[Section]:
+    def list_sections(self) -> list[Section]:
         out = []
         for section in self._server().library.sections():
-            if section.type == "movie":
+            if section.type in ("movie", "show"):
                 out.append(
                     Section(
                         key=str(section.key),
                         title=section.title,
-                        movie_count=section.totalViewSize(libtype="movie", includeCollections=False),
+                        movie_count=section.totalViewSize(
+                            libtype=section.type, includeCollections=False
+                        ),
+                        type=section.type,
                     )
                 )
         return out
 
     def count_movies(self, section_keys: list[str]) -> int:
         server = self._server()
-        return sum(
-            server.library.sectionByID(int(k)).totalViewSize(libtype="movie", includeCollections=False)
-            for k in section_keys
-        )
+        total = 0
+        for key in section_keys:
+            section = server.library.sectionByID(int(key))
+            total += section.totalViewSize(libtype=section.type, includeCollections=False)
+        return total
 
     def fetch_movies(
         self,
@@ -208,10 +212,13 @@ class PlexSource:
         sections = [server.library.sectionByID(int(k)) for k in section_keys]
         total: int | None = None
         if updated_since is None:
-            total = sum(s.totalViewSize(libtype="movie", includeCollections=False) for s in sections)
+            total = sum(
+                s.totalViewSize(libtype=s.type, includeCollections=False) for s in sections
+            )
         processed = 0
         for section in sections:
-            search_kwargs: dict = dict(libtype="movie")
+            libtype = "show" if section.type == "show" else "movie"
+            search_kwargs: dict = dict(libtype=libtype)
             if updated_since is not None:
                 search_kwargs["filters"] = {
                     "updatedAt>>": datetime.fromtimestamp(updated_since)
@@ -224,8 +231,8 @@ class PlexSource:
                     maxresults=PAGE_SIZE,
                     **search_kwargs,
                 )
-                for movie in page:
-                    yield _to_record(movie)
+                for item in page:
+                    yield _to_record(item, libtype)
                 processed += len(page)
                 if progress:
                     progress(processed, total)
@@ -299,7 +306,7 @@ def _epoch(value) -> int | None:
     return int(value.timestamp()) if value else None
 
 
-def _to_record(movie) -> MovieRecord:
+def _to_record(movie, libtype: str = "movie") -> MovieRecord:
     # Kill plexapi's per-attribute auto-reload before touching anything —
     # otherwise a sparse attribute on a partial object triggers one HTTP
     # round-trip per item (the N+1 trap, plex-notes.md §4).
@@ -307,6 +314,15 @@ def _to_record(movie) -> MovieRecord:
         movie._autoReload = False
     except Exception:  # pragma: no cover - defensive against plexapi changes
         pass
+
+    is_show = libtype == "show"
+    if is_show:
+        # A series is "unwatched" when no episode has been played.
+        view_count = getattr(movie, "viewedLeafCount", None) or 0
+        seasons = getattr(movie, "childCount", None)
+    else:
+        view_count = getattr(movie, "viewCount", 0) or 0
+        seasons = None
 
     imdb_id = tmdb_id = None
     for g in getattr(movie, "guids", None) or []:
@@ -347,8 +363,10 @@ def _to_record(movie) -> MovieRecord:
         ],
         thumb=getattr(movie, "thumb", None),
         art=getattr(movie, "art", None),
-        view_count=getattr(movie, "viewCount", 0) or 0,
+        view_count=view_count,
         last_viewed_at=_epoch(getattr(movie, "lastViewedAt", None)),
         added_at=_epoch(getattr(movie, "addedAt", None)),
         updated_at=_epoch(getattr(movie, "updatedAt", None)),
+        media_type="show" if is_show else "movie",
+        seasons=seasons,
     )

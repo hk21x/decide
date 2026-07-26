@@ -171,9 +171,9 @@ async def choose_server(body: SetupServerRequest, request: Request) -> SetupServ
 
     await db.run(_store)
 
-    available = await asyncio.to_thread(source.list_movie_sections)
+    available = await asyncio.to_thread(source.list_sections)
     entries = [
-        SectionEntry(key=s.key, title=s.title, movie_count=s.movie_count)
+        SectionEntry(key=s.key, title=s.title, movie_count=s.movie_count, type=s.type)
         for s in available
     ]
 

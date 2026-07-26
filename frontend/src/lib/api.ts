@@ -1,4 +1,5 @@
 import type {
+  AccessConfig,
   AlbumEntry,
   CacheStats,
   CreateSessionResponse,
@@ -82,6 +83,28 @@ export const api = {
 
   signOut: () => request<{ stage: string }>("/api/settings/signout", { method: "POST" }),
 
+  accessConfig: () => request<AccessConfig>("/api/settings/access"),
+
+  saveAccess: (localUrl: string, remoteUrl: string) =>
+    request<AccessConfig>("/api/settings/access", {
+      method: "PUT",
+      body: JSON.stringify({ local_url: localUrl, remote_url: remoteUrl }),
+    }),
+
+  rejoin: (sessionId: string, participantId: string) =>
+    request<JoinResponse>(`/api/sessions/${sessionId}/rejoin`, {
+      method: "POST",
+      body: JSON.stringify({ participant_id: participantId }),
+    }),
+
+  vapidKey: () => request<{ public_key: string }>("/api/push/vapid"),
+
+  subscribePush: (sessionId: string, subscription: PushSubscriptionJSON) =>
+    request<{ subscribed: boolean }>(`/api/sessions/${sessionId}/push`, {
+      method: "POST",
+      body: JSON.stringify(subscription),
+    }),
+
   lookupCode: (code: string) =>
     request<SessionSummary>(`/api/sessions/${encodeURIComponent(code)}`),
 
@@ -106,6 +129,7 @@ export const api = {
     if (filters.min_rating != null) params.set("min_rating", String(filters.min_rating));
     if (filters.certificate) params.set("certificate", filters.certificate);
     if (filters.collection) params.set("collection", filters.collection);
+    params.set("media", filters.media);
     return request<{ count: number }>(`/api/filters/preview?${params}`);
   },
 

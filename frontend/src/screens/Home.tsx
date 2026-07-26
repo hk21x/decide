@@ -1,12 +1,72 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { api } from "../lib/api";
-import type { LibraryStatus } from "../lib/types";
+import { api, ApiError } from "../lib/api";
+import { dropSession, getPid, listSessions } from "../lib/session";
+import type { LibraryStatus, ProgressResponse } from "../lib/types";
+
+interface RecentView {
+  id: string;
+  code: string;
+  myName: string;
+  swiped: number;
+  total: number;
+  matches: number;
+  done: boolean;
+}
 
 export function HomeScreen() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<LibraryStatus | null>(null);
+  const [recents, setRecents] = useState<RecentView[]>([]);
+
+  // Recent sessions (brief §7 Home). A 401 means this browser lost its
+  // cookie (or switched origin) — rejoin with the stored participant id
+  // rather than burning one of the four seats.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const views: RecentView[] = [];
+      for (const record of listSessions()) {
+        const pid = getPid(record.id);
+        let progress: ProgressResponse | null = null;
+        try {
+          progress = await api.progress(record.id);
+        } catch (err) {
+          if (err instanceof ApiError && err.status === 401 && pid) {
+            try {
+              await api.rejoin(record.id, pid);
+              progress = await api.progress(record.id);
+            } catch {
+              /* fall through to cleanup below */
+            }
+          } else if (
+            err instanceof ApiError &&
+            (err.status === 404 || err.status === 410)
+          ) {
+            dropSession(record.id);
+            continue;
+          }
+        }
+        if (!progress) continue;
+        const mine = progress.participants.find((p) => p.participant_id === pid);
+        if (!mine) continue;
+        views.push({
+          id: record.id,
+          code: record.code,
+          myName: mine.display_name,
+          swiped: mine.swiped,
+          total: mine.total,
+          matches: progress.match_count,
+          done: mine.swiped >= mine.total,
+        });
+      }
+      if (!cancelled) setRecents(views);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     api
@@ -77,6 +137,41 @@ export function HomeScreen() {
           🎟 Stub album
         </Link>
       </div>
+
+      {recents.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-xs uppercase tracking-[0.2em] text-fog/70">
+            Recent sessions
+          </h2>
+          <ul className="mt-2 space-y-2">
+            {recents.map((recent) => (
+              <li key={recent.id}>
+                <Link
+                  to={
+                    recent.done
+                      ? `/session/${recent.id}/matches`
+                      : `/session/${recent.id}/swipe`
+                  }
+                  className="flex items-center justify-between rounded-xl bg-riser px-4 py-3 text-sm"
+                >
+                  <span className="text-stub/90">
+                    <span className="type-mono text-xs tracking-[0.15em] text-fog">
+                      {recent.code}
+                    </span>{" "}
+                    · {recent.done ? "finished" : "in progress"}
+                  </span>
+                  <span className="type-mono text-xs text-fog">
+                    {recent.swiped}/{recent.total}
+                    {recent.matches > 0 && (
+                      <span className="ml-2 text-bulb">🎟 {recent.matches}</span>
+                    )}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

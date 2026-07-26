@@ -9,6 +9,7 @@ export interface DeckFilters {
   min_rating: number | null;
   certificate: "U" | "PG" | "12A" | "15" | "18" | null;
   collection: string | null;
+  media: "films" | "series";
 }
 
 export const defaultFilters: DeckFilters = {
@@ -20,6 +21,7 @@ export const defaultFilters: DeckFilters = {
   min_rating: null,
   certificate: null,
   collection: null,
+  media: "films",
 };
 
 export interface LibraryFilters {
@@ -64,6 +66,8 @@ export interface DeckItem {
   cast: { name: string; role: string | null }[];
   has_poster: boolean;
   has_backdrop: boolean;
+  media_type: "movie" | "show";
+  seasons: number | null;
 }
 
 export interface DeckResponse {
@@ -115,6 +119,7 @@ export interface SectionEntry {
   key: string;
   title: string;
   movie_count: number;
+  type: "movie" | "show";
 }
 
 export interface SetupServerResponse {
@@ -216,4 +221,11 @@ export interface PlayerEntry {
   id: string;
   name: string;
   product: string | null;
+}
+
+export interface AccessConfig {
+  local_url: string | null;
+  remote_url: string | null;
+  detected_local: string | null;
+  detected_remote: string | null;
 }

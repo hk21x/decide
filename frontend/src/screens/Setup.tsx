@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { api, ApiError } from "../lib/api";
 import { MOODS, type Mood } from "../lib/moods";
-import { getName, saveName, savePid } from "../lib/session";
+import { getName, recordSession, saveName, savePid } from "../lib/session";
 import {
   defaultFilters,
   type DeckFilters,
@@ -109,6 +109,7 @@ export function SetupScreen() {
     try {
       const session = await api.createSession(name, filters, deckSize);
       savePid(session.id, session.participant_id);
+      recordSession({ id: session.id, code: session.join_code, deck_size: session.deck_size });
       if (!solo) saveName(name);
       navigate(
         solo ? `/session/${session.id}/swipe` : `/session/${session.id}/lobby`,
@@ -165,6 +166,31 @@ export function SetupScreen() {
           </div>
         )}
         <div>
+          <h2 className="mb-2 text-sm font-semibold text-stub/80">Tonight we're picking</h2>
+          <div className="flex gap-2">
+            {(
+              [
+                ["films", "🎬 A film"],
+                ["series", "📺 A series"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                onClick={() => patch({ media: value })}
+                aria-pressed={filters.media === value}
+                className={`flex-1 rounded-xl border py-2.5 text-sm ${
+                  filters.media === value
+                    ? "border-bulb bg-bulb/10 text-bulb"
+                    : "border-hairline text-fog"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
           <h2 className="mb-2 text-sm font-semibold text-stub/80">Deck size</h2>
           <div className="flex gap-2">
             {SIZE_OPTIONS.map((size) => (
@@ -193,6 +219,7 @@ export function SetupScreen() {
           />
         </label>
 
+        {filters.media === "films" && (
         <div>
           <h2 className="mb-2 text-sm font-semibold text-stub/80">Max runtime</h2>
           <div className="flex gap-2">
@@ -211,6 +238,7 @@ export function SetupScreen() {
             ))}
           </div>
         </div>
+        )}
 
         <div>
           <h2 className="mb-2 text-sm font-semibold text-stub/80">Minimum rating</h2>

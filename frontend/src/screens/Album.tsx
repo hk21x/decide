@@ -42,6 +42,8 @@ export function AlbumScreen() {
         cast: [],
         has_poster: false,
         has_backdrop: false,
+        media_type: "movie",
+        seasons: null,
       },
       matched_at: entry.matched_at,
       right_count: entry.names.length,

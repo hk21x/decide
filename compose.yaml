@@ -14,4 +14,7 @@ services:
       # - PLEX_TOKEN=your-token
       # - PLEX_SECTIONS=1
       # - ART_CACHE_MB=500
+      # Join-QR addresses (also settable in-app under Settings):
+      # - LOCAL_URL=http://192.168.1.10:8080
+      # - REMOTE_URL=https://decide.tailnet-name.ts.net
     restart: unless-stopped

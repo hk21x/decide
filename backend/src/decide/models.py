@@ -39,6 +39,7 @@ class SectionEntry(BaseModel):
     key: str
     title: str
     movie_count: int
+    type: str = "movie"  # movie | show
 
 
 class SetupServerRequest(BaseModel):
@@ -94,6 +95,7 @@ class DeckFilters(BaseModel):
     min_rating: float | None = Field(default=None, ge=0, le=10)
     certificate: Literal["U", "PG", "12A", "15", "18"] | None = None
     collection: str | None = Field(default=None, max_length=200)
+    media: Literal["films", "series"] = "films"
 
 
 class LibraryFilters(BaseModel):
@@ -162,6 +164,8 @@ class DeckItem(BaseModel):
     cast: list[dict] = Field(default_factory=list)
     has_poster: bool = False
     has_backdrop: bool = False
+    media_type: str = "movie"
+    seasons: int | None = None
 
 
 class DeckResponse(BaseModel):
@@ -274,3 +278,28 @@ class PlayersResponse(BaseModel):
 class PlayRequest(BaseModel):
     item_id: str
     player_id: str
+
+
+class AccessConfig(BaseModel):
+    local_url: str | None = None
+    remote_url: str | None = None
+    detected_local: str | None = None
+    detected_remote: str | None = None
+
+
+class AccessUpdate(BaseModel):
+    local_url: str = ""
+    remote_url: str = ""
+
+
+class RejoinRequest(BaseModel):
+    participant_id: str
+
+
+class VapidKey(BaseModel):
+    public_key: str
+
+
+class PushSubscription(BaseModel):
+    endpoint: str
+    keys: dict

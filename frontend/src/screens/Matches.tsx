@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { PosterImg } from "../components/PosterImg";
+import { PushBell } from "../components/PushBell";
 import { TicketStub } from "../components/TicketStub";
 import { api } from "../lib/api";
 import { openInPlex } from "../lib/plexLink";
@@ -175,7 +176,7 @@ export function MatchesScreen() {
               <div className="mt-3 flex flex-wrap gap-2">
                 {machineId && (
                   <button
-                    onClick={() => openInPlex(crownedEntry.item.id, machineId)}
+                    onClick={() => openInPlex(crownedEntry.item.id, machineId, crownedEntry.item.media_type)}
                     className="rounded-xl bg-bulb px-4 py-2 text-sm font-semibold text-press"
                   >
                     Open in Plex
@@ -220,6 +221,7 @@ export function MatchesScreen() {
               );
             })}
           </ul>
+          <PushBell sessionId={sessionId} />
           {tasteLines.length > 0 && (
             <div className="mt-3 border-t border-hairline pt-3 text-sm text-fog">
               {tasteLines.map((line) => (
@@ -275,7 +277,9 @@ export function MatchesScreen() {
                 kept={kept.has(entry.item.id)}
                 onKeep={() => keepStub(entry)}
                 onOpen={
-                  machineId ? () => openInPlex(entry.item.id, machineId) : undefined
+                  machineId
+                    ? () => openInPlex(entry.item.id, machineId, entry.item.media_type)
+                    : undefined
                 }
               />
             ))}

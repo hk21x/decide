@@ -13,6 +13,7 @@ from . import config, db, jobs, migrations, security
 from .events import ConnectionManager
 from .routers import (
     album,
+    push as push_router,
     art,
     health,
     library,
@@ -61,6 +62,9 @@ async def lifespan(app: FastAPI):
     await db.run(migrations.apply)
     await db.run(security.bootstrap)
     security.install_redaction()
+    from .services import push as push_service
+
+    await db.run(push_service.ensure_vapid)
 
     # Register every stored secret with the log redaction filter (C1).
     security.add_secret(settings.env_plex_token)
@@ -110,6 +114,7 @@ def create_app(settings: config.Settings | None = None) -> FastAPI:
     app.include_router(settings_router.router)
     app.include_router(album.router)
     app.include_router(players.router)
+    app.include_router(push_router.router)
 
     if settings.static_dir and settings.static_dir.exists():
         static_dir = settings.static_dir

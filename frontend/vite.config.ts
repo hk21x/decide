@@ -8,7 +8,13 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
       registerType: "autoUpdate",
+      injectManifest: {
+        globPatterns: ["**/*.{js,css,html,woff2}"],
+      },
       manifest: {
         name: "decide",
         short_name: "decide",

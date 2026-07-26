@@ -19,7 +19,22 @@ export function formatRating(rating: number | null): string | null {
   return rating.toFixed(1);
 }
 
-import type { DeckFilters } from "./types";
+import type { DeckFilters, DeckItem } from "./types";
+
+/** "2019 · 1h 52m" for films, "2019 · Series · 3 seasons" for shows. */
+export function formatMeta(item: DeckItem): string {
+  const parts: string[] = [];
+  if (item.year) parts.push(String(item.year));
+  if (item.media_type === "show") {
+    parts.push("Series");
+    if (item.seasons)
+      parts.push(`${item.seasons} season${item.seasons === 1 ? "" : "s"}`);
+  } else {
+    const runtime = formatRuntime(item.runtime_min);
+    if (runtime) parts.push(runtime);
+  }
+  return parts.join(" · ");
+}
 
 /** Human-readable filter summary for the lobby. */
 export function describeFilters(filters: DeckFilters): string {

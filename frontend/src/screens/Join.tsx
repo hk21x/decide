@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { api, ApiError } from "../lib/api";
-import { getName, saveName, savePid } from "../lib/session";
+import { getName, getPid, recordSession, saveName, savePid } from "../lib/session";
 import type { SessionSummary } from "../lib/types";
 
 export function JoinScreen() {
@@ -42,6 +42,24 @@ export function JoinScreen() {
     };
   }, [code]);
 
+  const knownPid = session ? getPid(session.id) : null;
+  const knownAs = session?.participants.find((p) => p.id === knownPid) ?? null;
+
+  async function rejoin() {
+    if (!session || !knownPid) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await api.rejoin(session.id, knownPid);
+      recordSession({ id: session.id, code: session.join_code, deck_size: session.deck_size });
+      navigate(`/session/${session.id}/lobby`);
+    } catch {
+      setError("Couldn't rejoin — join with your name instead.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function join() {
     if (!session) return;
     const name = displayName.trim();
@@ -54,6 +72,7 @@ export function JoinScreen() {
     try {
       const joined = await api.join(session.id, name);
       savePid(session.id, joined.participant_id);
+      recordSession({ id: session.id, code: session.join_code, deck_size: session.deck_size });
       saveName(name);
       navigate(`/session/${session.id}/lobby`);
     } catch (err) {
@@ -99,6 +118,15 @@ export function JoinScreen() {
 
       {session && (
         <div className="mt-6 rounded-2xl bg-riser p-5">
+          {knownAs && (
+            <button
+              onClick={rejoin}
+              disabled={busy}
+              className="mb-4 w-full rounded-xl border-2 border-spool py-3 font-semibold text-spool disabled:opacity-40"
+            >
+              Rejoin as {knownAs.display_name}
+            </button>
+          )}
           <p className="text-sm text-stub/90">
             {session.participants[0]?.display_name ?? "Someone"}'s session ·{" "}
             <span className="type-mono">{session.deck_size}</span> films

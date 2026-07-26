@@ -40,7 +40,7 @@ def _swipe(test_client, sid, headers, item_id, direction):
 
 def test_migration_v2_applied(dbenv):
     conn = db.connect()
-    assert conn.execute("PRAGMA user_version").fetchone()[0] == len(migrations.MIGRATIONS) == 2
+    assert conn.execute("PRAGMA user_version").fetchone()[0] == len(migrations.MIGRATIONS)
     columns = {r[1] for r in conn.execute("PRAGMA table_info(items)")}
     assert "collections_json" in columns
     session_cols = {r[1] for r in conn.execute("PRAGMA table_info(sessions)")}
@@ -187,3 +187,94 @@ def test_players_endpoint_degrades_gracefully(client):
     )
     assert refused.status_code == 502
     assert "Check Plex is open" in refused.json()["detail"]
+
+
+def test_series_records_and_media_filter(dbenv):
+    seed_items(
+        [make_movie(i) for i in range(1, 4)]
+        + [
+            make_movie(
+                100 + i,
+                media_type="show",
+                seasons=2 + i,
+                runtime_min=None,
+                title=f"Show {i}",
+            )
+            for i in range(1, 4)
+        ]
+    )
+    assert deck.preview_count(DeckFilters(media="films")) == 3
+    assert deck.preview_count(DeckFilters(media="series")) == 3
+    conn = db.connect()
+    row = conn.execute("SELECT media_type, seasons FROM items WHERE id = '101'").fetchone()
+    assert row["media_type"] == "show" and row["seasons"] == 3
+
+
+def test_rejoin_reissues_identity(client):
+    test_client, app = client
+    sid, host, guest = _session_with_two(test_client)
+    # Simulate a lost cookie: rejoin with the stored participant id.
+    progress = test_client.get(f"/api/sessions/{sid}/progress", headers=host).json()
+    my_pid = progress["participants"][0]["participant_id"]
+
+    rejoin = test_client.post(
+        f"/api/sessions/{sid}/rejoin", json={"participant_id": my_pid}
+    )
+    assert rejoin.status_code == 200
+    assert rejoin.json()["participant_id"] == my_pid
+    fresh_cookie = {"Cookie": rejoin.headers["set-cookie"].split(";")[0]}
+    test_client.cookies.clear()
+    deck_resp = test_client.get(f"/api/sessions/{sid}/deck", headers=fresh_cookie)
+    assert deck_resp.status_code == 200
+    # Participant count unchanged — no seat burned.
+    summary = test_client.get(f"/api/sessions/{sid}/summary", headers=fresh_cookie).json()
+    assert len(summary["participants"]) == 2
+
+    unknown = test_client.post(
+        f"/api/sessions/{sid}/rejoin", json={"participant_id": "not-a-real-pid"}
+    )
+    assert unknown.status_code == 404
+
+
+def test_access_endpoints_roundtrip(client):
+    test_client, app = client
+    initial = test_client.get("/api/settings/access").json()
+    assert initial["local_url"] is None and initial["remote_url"] is None
+
+    saved = test_client.put(
+        "/api/settings/access",
+        json={
+            "local_url": "http://192.168.1.25:8080/",
+            "remote_url": "https://harrybox.tail1234.ts.net",
+        },
+    ).json()
+    assert saved["local_url"] == "http://192.168.1.25:8080"  # trailing slash trimmed
+    assert saved["remote_url"] == "https://harrybox.tail1234.ts.net"
+
+    cleared = test_client.put(
+        "/api/settings/access", json={"local_url": "", "remote_url": ""}
+    ).json()
+    assert cleared["local_url"] is None and cleared["remote_url"] is None
+
+
+def test_push_vapid_and_subscription(client):
+    test_client, app = client
+    sid, host, guest = _session_with_two(test_client)
+
+    vapid = test_client.get("/api/push/vapid").json()
+    assert len(vapid["public_key"]) > 40  # urlsafe b64 of an EC point
+
+    sub = {
+        "endpoint": "https://push.example/sub/abc123",
+        "keys": {"p256dh": "BFakeKey", "auth": "authsecret"},
+    }
+    stored = test_client.post(f"/api/sessions/{sid}/push", json=sub, headers=host)
+    assert stored.status_code == 200 and stored.json()["subscribed"] is True
+    # Idempotent upsert.
+    test_client.post(f"/api/sessions/{sid}/push", json=sub, headers=host)
+    (count,) = db.connect().execute("SELECT COUNT(*) FROM push_subs").fetchone()
+    assert count == 1
+
+    # Unauthenticated subscription refused.
+    refused = test_client.post(f"/api/sessions/{sid}/push", json=sub)
+    assert refused.status_code == 401

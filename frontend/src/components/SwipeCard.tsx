@@ -96,6 +96,11 @@ export function SwipeCard({ item, stackIndex, onCommit, onOpenDetail }: Props) {
         </h2>
         <div className="mt-1.5 flex items-center gap-2 text-xs text-[#B7AECB]">
           {item.year && <span>{item.year}</span>}
+          {item.media_type === "show" && (
+            <span className="rounded bg-[#8B6CD9]/30 px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-[#C9B8F0]">
+              Series{item.seasons ? ` · ${item.seasons}` : ""}
+            </span>
+          )}
           {runtime && <span className="type-mono">{runtime}</span>}
           {cert && (
             <span className="rounded border border-[#4A4160] px-1 py-px text-[10px] leading-tight">

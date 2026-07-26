@@ -32,6 +32,8 @@ def make_movie(i: int, **overrides) -> MovieRecord:
         directors=[f"Director {i}"],
         cast=[{"name": f"Actor {i}", "role": "Lead"}],
         collections=[],
+        media_type="movie",
+        seasons=None,
         thumb=f"/library/metadata/{i}/thumb/1",
         art=f"/library/metadata/{i}/art/1",
         view_count=0,
@@ -51,8 +53,8 @@ class FakeSource:
     def test_connection(self) -> ServerInfo:
         return ServerInfo("FAKEMACHINE0123", "Fake Server", "1.0")
 
-    def list_movie_sections(self) -> list[Section]:
-        return [Section("1", "Films", len(self.movies))]
+    def list_sections(self) -> list[Section]:
+        return [Section("1", "Films", len(self.movies), type="movie")]
 
     def count_movies(self, section_keys: list[str]) -> int:
         return len(self.movies)

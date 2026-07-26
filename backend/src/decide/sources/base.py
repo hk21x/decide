@@ -26,6 +26,7 @@ class Section:
     key: str
     title: str
     movie_count: int
+    type: str = "movie"  # movie | show
 
 
 @dataclass
@@ -53,6 +54,8 @@ class MovieRecord:
     directors: list[str] = field(default_factory=list)
     cast: list[dict] = field(default_factory=list)
     collections: list[str] = field(default_factory=list)
+    media_type: str = "movie"  # movie | show
+    seasons: int | None = None  # shows only
     thumb: str | None = None
     art: str | None = None
     view_count: int = 0
@@ -67,7 +70,9 @@ ProgressCallback = Callable[[int, int | None], None]  # (processed, total-or-unk
 class MediaSource(Protocol):
     def test_connection(self) -> ServerInfo: ...
 
-    def list_movie_sections(self) -> list[Section]: ...
+    def list_sections(self) -> list[Section]:
+        """Movie and show sections available on the server."""
+        ...
 
     def fetch_movies(
         self,

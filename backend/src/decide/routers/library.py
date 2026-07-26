@@ -26,6 +26,7 @@ def filters_from_query(
     min_rating: float | None = Query(default=None, ge=0, le=10),
     certificate: str | None = Query(default=None),
     collection: str | None = Query(default=None, max_length=200),
+    media: str = Query(default="films"),
 ) -> DeckFilters:
     return DeckFilters(
         unwatched_only=unwatched_only,
@@ -36,6 +37,7 @@ def filters_from_query(
         min_rating=min_rating,
         certificate=certificate,  # validated by the model
         collection=collection or None,
+        media=media if media in ("films", "series") else "films",
     )
 
 

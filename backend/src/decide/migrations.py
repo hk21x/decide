@@ -30,9 +30,24 @@ CREATE TABLE album (
 );
 """
 
+# v3: series-level decks (media_type/seasons on items) and Web Push
+# subscriptions for async match alerts.
+_V3 = """
+ALTER TABLE items ADD COLUMN media_type TEXT NOT NULL DEFAULT 'movie';
+ALTER TABLE items ADD COLUMN seasons INTEGER;
+CREATE TABLE push_subs (
+    endpoint       TEXT PRIMARY KEY,
+    participant_id TEXT NOT NULL,
+    session_id     TEXT NOT NULL,
+    sub_json       TEXT NOT NULL,
+    created_at     INTEGER NOT NULL
+);
+"""
+
 MIGRATIONS: list[str] = [
     resources.files(__package__).joinpath("schema.sql").read_text(),
     _V2,
+    _V3,
 ]
 
 

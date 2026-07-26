@@ -16,3 +16,34 @@ export function saveName(name: string): void {
 export function getName(): string {
   return localStorage.getItem("decide-name") ?? "";
 }
+
+export interface SessionRecord {
+  id: string;
+  code: string;
+  deck_size: number;
+  saved_at: number;
+}
+
+const RECORDS_KEY = "decide-sessions";
+const MAX_RECORDS = 8;
+
+export function recordSession(record: Omit<SessionRecord, "saved_at">): void {
+  const list = listSessions().filter((r) => r.id !== record.id);
+  list.unshift({ ...record, saved_at: Date.now() });
+  localStorage.setItem(RECORDS_KEY, JSON.stringify(list.slice(0, MAX_RECORDS)));
+}
+
+export function listSessions(): SessionRecord[] {
+  try {
+    return JSON.parse(localStorage.getItem(RECORDS_KEY) ?? "[]") as SessionRecord[];
+  } catch {
+    return [];
+  }
+}
+
+export function dropSession(sessionId: string): void {
+  localStorage.setItem(
+    RECORDS_KEY,
+    JSON.stringify(listSessions().filter((r) => r.id !== sessionId)),
+  );
+}

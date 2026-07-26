@@ -71,5 +71,6 @@ def purge_blocking() -> None:
         conn.execute("DELETE FROM swipes WHERE session_id = ?", (session_id,))
         conn.execute("DELETE FROM matches WHERE session_id = ?", (session_id,))
         conn.execute("DELETE FROM participants WHERE session_id = ?", (session_id,))
+        conn.execute("DELETE FROM push_subs WHERE session_id = ?", (session_id,))
         conn.execute("DELETE FROM sessions WHERE id = ?", (session_id,))
     conn.commit()

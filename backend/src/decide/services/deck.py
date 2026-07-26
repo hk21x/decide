@@ -74,12 +74,15 @@ class DeckTooSmall(Exception):
 def _load_candidates(conn: sqlite3.Connection) -> list[sqlite3.Row]:
     return conn.execute(
         "SELECT id, guid, imdb_id, tmdb_id, year, runtime_min, content_rating, "
-        "audience_rating, genres_json, collections_json, view_count FROM items "
-        "WHERE unusable = 0 ORDER BY id"
+        "audience_rating, genres_json, collections_json, view_count, media_type "
+        "FROM items WHERE unusable = 0 ORDER BY id"
     ).fetchall()
 
 
 def _passes(row: sqlite3.Row, f: DeckFilters) -> bool:
+    wanted = "show" if f.media == "series" else "movie"
+    if row["media_type"] != wanted:
+        return False
     if f.unwatched_only and (row["view_count"] or 0) > 0:
         return False
     if f.genres:

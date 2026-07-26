@@ -20,7 +20,7 @@ decide — Swipe. Decide. Watch.
 
 A self-hosted swipe-to-match film picker for your Plex library. Two to four people swipe through the same small, filtered deck of films from your server; when everyone says "Tonight" to the same one it's a match, a Final Round crowns the winner, and ticket stubs remember your movie nights.
 
-Features: mood-based filters (runtime, rating, certificate, collections), join codes with QR, live matches over WebSocket, async swiping (together or hours apart), taste-compatibility stats, a keepsake stub album, "Open in Plex" and play-on-your-TV, installable PWA with offline swiping, dark and light themes.
+Features: film AND whole-series decks, mood-based filters (runtime, rating, certificate, collections), join codes with a dual QR (local + Tailscale/remote), live matches over WebSocket plus push alerts, async swiping (together or hours apart), a Final Round that crowns tonight's pick, taste-compatibility stats, a keepsake stub album, "Open in Plex" and play-on-your-TV, installable PWA with offline swiping, dark and light themes.
 
 Privacy: your Plex token never leaves the container — every Plex call, including artwork, is proxied by the backend. Once the library is synced, everything works on the LAN with no internet access.
 
@@ -35,5 +35,7 @@ decide is an independent project that works with Plex Media Server. It is not af
   <Config Name="Artwork cache cap (MB)" Target="ART_CACHE_MB" Default="500" Description="Disk cap for the poster/backdrop cache under /data/art." Type="Variable" Display="advanced" Required="false" Mask="false">500</Config>
   <Config Name="Plex URL (optional)" Target="PLEX_URL" Default="" Description="Optional declarative setup: your Plex server address (e.g. http://192.168.1.10:32400). Leave empty to use the in-browser setup wizard instead." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Plex token (optional)" Target="PLEX_TOKEN" Default="" Description="Optional declarative setup: an X-Plex-Token. Leave empty to sign in with the wizard's plex.tv/link flow instead." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="Local join address (optional)" Target="LOCAL_URL" Default="" Description="Address the join QR shows to people on your LAN (e.g. http://192.168.1.10:8080). Auto-detected if empty; also settable in-app." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Remote join address (optional)" Target="REMOTE_URL" Default="" Description="Address the join QR shows to remote friends (e.g. your Tailscale https://... name). Also settable in-app." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Plex sections (optional)" Target="PLEX_SECTIONS" Default="" Description="Optional declarative setup: comma-separated movie library section ids (e.g. 1,4)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
 </Container>

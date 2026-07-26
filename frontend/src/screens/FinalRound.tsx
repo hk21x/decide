@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { PosterImg } from "../components/PosterImg";
 import { api } from "../lib/api";
-import { formatRuntime } from "../lib/format";
+import { formatMeta } from "../lib/format";
 import { openInPlex } from "../lib/plexLink";
 import type { DeckItem, PlayerEntry } from "../lib/types";
 
@@ -134,16 +134,12 @@ export function FinalRoundScreen() {
             />
           </div>
           <h1 className="type-display mt-5 text-2xl text-stub">{champion.title}</h1>
-          <p className="type-mono mt-1 text-sm text-fog">
-            {[champion.year, formatRuntime(champion.runtime_min)]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
+          <p className="type-mono mt-1 text-sm text-fog">{formatMeta(champion)}</p>
 
           <div className="mt-8 flex w-full flex-col gap-3">
             {machineId && (
               <button
-                onClick={() => openInPlex(champion.id, machineId)}
+                onClick={() => openInPlex(champion.id, machineId, champion.media_type)}
                 className="rounded-2xl bg-bulb py-4 font-semibold text-press"
               >
                 Open in Plex
@@ -243,11 +239,7 @@ export function FinalRoundScreen() {
                     </p>
                   )}
                   <p className="type-display text-lg text-stub">{item.title}</p>
-                  <p className="type-mono mt-1 text-xs text-fog">
-                    {[item.year, formatRuntime(item.runtime_min)]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </p>
+                  <p className="type-mono mt-1 text-xs text-fog">{formatMeta(item)}</p>
                 </div>
               </button>
             ))}

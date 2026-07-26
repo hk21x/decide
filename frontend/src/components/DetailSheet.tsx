@@ -77,6 +77,11 @@ export function DetailSheet({ item, onClose, onCommit }: Props) {
               )}
               <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-fog">
                 {item.year && <span>{item.year}</span>}
+                {item.media_type === "show" && (
+                  <span className="rounded-full bg-spool/20 px-2 py-0.5 font-semibold text-spool">
+                    Series{item.seasons ? ` · ${item.seasons} seasons` : ""}
+                  </span>
+                )}
                 {runtime && <span className="type-mono">{runtime}</span>}
                 {cert && (
                   <span className="rounded border border-hairline px-1 py-px text-[10px]">

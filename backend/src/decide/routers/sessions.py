@@ -18,6 +18,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from .. import config, db, security
 from ..models import (
     CreateSessionRequest,
+    RejoinRequest,
     CreateSessionResponse,
     CrownRequest,
     CrownResponse,
@@ -41,6 +42,7 @@ from ..ratelimit import code_lookup_limiter
 from ..services import deck as deck_service
 from ..services import joincode
 from ..services import matches as match_service
+from ..services import push as push_service
 
 router = APIRouter(prefix="/api/sessions", tags=["sessions"])
 
@@ -119,6 +121,13 @@ def _set_participant_cookie(response: Response, session_id: str, participant_id:
     )
 
 
+def _item_title(item_id: str) -> str:
+    row = db.connect().execute(
+        "SELECT title FROM items WHERE id = ?", (item_id,)
+    ).fetchone()
+    return row["title"] if row else "A film"
+
+
 def _row_to_deck_item(row: sqlite3.Row) -> DeckItem:
     return DeckItem(
         id=row["id"],
@@ -134,6 +143,8 @@ def _row_to_deck_item(row: sqlite3.Row) -> DeckItem:
         cast=json.loads(row["cast_json"] or "[]"),
         has_poster=bool(row["thumb"]),
         has_backdrop=bool(row["art"]),
+        media_type=row["media_type"],
+        seasons=row["seasons"],
     )
 
 
@@ -173,7 +184,7 @@ def _right_swipers(session_id: str, item_id: str) -> list[sqlite3.Row]:
         "SELECT p.id, p.display_name FROM swipes s "
         "JOIN participants p ON p.id = s.participant_id "
         "WHERE s.session_id = ? AND s.item_id = ? AND s.direction = 1 "
-        "ORDER BY p.joined_at",
+        "ORDER BY p.joined_at, p.rowid",
         (session_id, item_id),
     ).fetchall()
 
@@ -204,10 +215,33 @@ async def _broadcast_swipe_effects(request: Request, session_id: str, participan
                 "participant_ids": [r["id"] for r in swipers],
             },
         )
+        title = await db.run(_item_title, item_id)
+        await db.run(
+            push_service.send_for_session,
+            session_id,
+            {
+                "title": "\U0001f39f It's a match",
+                "body": f"{title} — everyone said Tonight.",
+                "url": f"/session/{session_id}/matches",
+                "tag": f"match-{item_id}",
+            },
+            participant["id"],
+        )
     for item_id in outcome.removed_matches:
         await events.broadcast(session_id, {"type": "unmatch", "item_id": item_id})
     if all_complete:
         await events.broadcast(session_id, {"type": "complete"})
+        await db.run(
+            push_service.send_for_session,
+            session_id,
+            {
+                "title": "Deck done",
+                "body": "Everyone has finished swiping — see tonight's matches.",
+                "url": f"/session/{session_id}/matches",
+                "tag": "complete",
+            },
+            participant["id"],
+        )
 
 
 # ---------------------------------------------------------------- routes
@@ -339,6 +373,30 @@ async def join_session(session_id: str, body: JoinRequest, request: Request, res
     )
     return JoinResponse(
         participant_id=participant_id, session=await db.run(_summary, session)
+    )
+
+
+@router.post("/{session_id}/rejoin", response_model=JoinResponse)
+async def rejoin_session(session_id: str, body: RejoinRequest, response: Response):
+    """Re-issue the participant cookie for someone this browser already was —
+    a lost cookie or a different origin (LAN vs Tailscale) must not burn one
+    of the four seats."""
+    session = await db.run(_load_session, session_id)
+    row = await db.run(
+        lambda: db.connect()
+        .execute(
+            "SELECT * FROM participants WHERE id = ? AND session_id = ?",
+            (body.participant_id, session_id),
+        )
+        .fetchone()
+    )
+    if row is None:
+        raise HTTPException(
+            status_code=404, detail="No such participant in this session."
+        )
+    _set_participant_cookie(response, session_id, row["id"])
+    return JoinResponse(
+        participant_id=row["id"], session=await db.run(_summary, session)
     )
 
 
@@ -505,6 +563,18 @@ async def crown(session_id: str, body: CrownRequest, request: Request):
         )
     await request.app.state.events.broadcast(
         session_id, {"type": "crowned", "item_id": body.item_id}
+    )
+    title = await db.run(_item_title, body.item_id)
+    await db.run(
+        push_service.send_for_session,
+        session_id,
+        {
+            "title": "\U0001f451 Tonight's film",
+            "body": f"{title} has been crowned.",
+            "url": f"/session/{session_id}/matches",
+            "tag": "crowned",
+        },
+        None,
     )
     return CrownResponse(crowned_item_id=body.item_id)
 

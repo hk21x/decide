@@ -15,7 +15,7 @@
 <h3 align="center">decide</h3>
 
   <p align="center">
-    Swipe. Decide. Watch. — a self-hosted swipe-to-match film picker for your Plex library.
+    Swipe. Decide. Watch. - a self-hosted swipe-to-match film picker for your Plex library.
     <br />
     <br />
     <a href="https://github.com/hk21x/decide/issues/new?labels=bug">Report Bug</a>
@@ -64,12 +64,13 @@ it. **decide** turns the choice into a game: two to four people swipe through
 the same small deck of films from your Plex library; when everyone says
 "Tonight" to the same one, it's a match — and a ticket stub prints.
 
-* **Small decks, not endless scrolling.** Filter by mood, runtime, rating,
-  certificate — or build the deck from a Plex collection; swipe 20–50 cards,
-  not 3,000.
+* **Small decks, not endless scrolling.** Films **or whole series** — filter
+  by mood, runtime, rating, certificate, or deal from a Plex collection;
+  swipe 20–50 cards, not 3,000.
 * **Together or apart.** Everyone swipes the same frozen deck in the same
   order, live on the sofa or hours apart on the train. Matches land the
-  moment you agree.
+  moment you agree — with **push alerts** when you're not looking, and
+  recent sessions waiting on the Home screen when you come back.
 * **It actually decides.** Too many matches? The **Final Round** runs them
   head-to-head until one film is crowned — then open it in Plex, or send it
   straight to the TV.
@@ -154,8 +155,10 @@ works with Unraid's "Add Container → Template" as well.
 1. **Start a session** — pick a mood (or fine-tune genres), a runtime cap, a
    minimum rating, a certificate ceiling for family nights, or a Plex
    collection to deal from. A live counter shows how many films match.
-2. **Share the code** — a six-character join code, a copyable link, and a QR
-   for whoever's on the sofa next to you.
+2. **Share the code** — a six-character join code, a copyable link, and a
+   **dual QR**: one for people on your Wi-Fi, one for remote friends on your
+   Tailscale network (Settings → Access & sharing). Lost your place? Sessions
+   reappear on Home, and rejoining never burns one of the four seats.
 3. **Swipe** — right means "I'd watch this tonight". Tap ⓘ for the synopsis,
    cast and backdrop. Undo within five seconds if your thumb betrayed you.
 4. **Match** — unanimous right-swipes print a ticket stub in the shared
@@ -187,6 +190,8 @@ declarative setups:
 | `PLEX_TOKEN` | — | Skip the wizard: auth token |
 | `PLEX_SECTIONS` | — | Comma-separated movie section ids |
 | `SECRET_KEY` | auto-generated | Cookie-signing key override |
+| `LOCAL_URL` | auto-detected | Join-QR address for the local network |
+| `REMOTE_URL` | — | Join-QR address for remote access (e.g. Tailscale) |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -233,6 +238,8 @@ If your Plex server runs in Docker and LAN clients appear as remote
 - [x] The stub album — kept tickets that outlive sessions
 - [x] Decks from Plex collections
 - [x] Play the crowned film on a Plex client (TV, etc.)
+- [x] Series-level TV decks (swipe whole shows — never episodes)
+- [x] Recent sessions + rejoin, match push alerts, Tailscale dual-QR
 - [ ] Jellyfin support (media access already sits behind a `MediaSource`
       protocol — a `JellyfinSource` drops in without touching the rest)
 - [ ] Per-person Plex sign-in, so "unwatched" means *your* unwatched

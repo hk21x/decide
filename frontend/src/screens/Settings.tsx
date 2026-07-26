@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { api } from "../lib/api";
 import { getTheme, setTheme, type Theme } from "../lib/theme";
-import type { CacheStats, LibraryStatus, SetupStatus } from "../lib/types";
+import type { AccessConfig, CacheStats, LibraryStatus, SetupStatus } from "../lib/types";
 
 function formatBytes(bytes: number): string {
   if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
@@ -18,6 +18,10 @@ export function SettingsScreen() {
   const [cache, setCache] = useState<CacheStats | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [theme, setThemeState] = useState<Theme>(getTheme());
+  const [access, setAccess] = useState<AccessConfig | null>(null);
+  const [localUrl, setLocalUrl] = useState("");
+  const [remoteUrl, setRemoteUrl] = useState("");
+  const [accessNote, setAccessNote] = useState<string | null>(null);
 
   function pickTheme(next: Theme) {
     setThemeState(next);
@@ -35,6 +39,26 @@ export function SettingsScreen() {
     const timer = setInterval(refresh, 2000);
     return () => clearInterval(timer);
   }, [refresh]);
+
+  useEffect(() => {
+    api
+      .accessConfig()
+      .then((config) => {
+        setAccess(config);
+        setLocalUrl(config.local_url ?? "");
+        setRemoteUrl(config.remote_url ?? "");
+      })
+      .catch(() => {});
+  }, []);
+
+  async function saveAccess() {
+    const saved = await api.saveAccess(localUrl, remoteUrl);
+    setAccess(saved);
+    setLocalUrl(saved.local_url ?? "");
+    setRemoteUrl(saved.remote_url ?? "");
+    setAccessNote("Saved — the join QR now offers both addresses.");
+    setTimeout(() => setAccessNote(null), 3000);
+  }
 
   async function resync() {
     try {
@@ -114,6 +138,56 @@ export function SettingsScreen() {
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="mb-4 rounded-2xl bg-riser p-5">
+        <h2 className="text-sm font-semibold text-stub/80">Access &amp; sharing</h2>
+        <p className="mt-1 text-xs text-fog">
+          The join QR uses these. Local for the sofa; remote for friends on your
+          Tailscale network or reverse proxy.
+        </p>
+        <label className="mt-3 block text-xs text-fog" htmlFor="access-local">
+          Local address
+        </label>
+        <input
+          id="access-local"
+          type="url"
+          value={localUrl}
+          onChange={(e) => setLocalUrl(e.target.value)}
+          placeholder={access?.detected_local ?? "http://192.168.1.10:8080"}
+          className="type-mono mt-1 w-full rounded-xl border border-hairline bg-house px-3 py-2.5 text-sm text-stub placeholder:text-fog/40"
+        />
+        {access?.detected_local && access.detected_local !== localUrl && (
+          <button
+            onClick={() => setLocalUrl(access.detected_local!)}
+            className="mt-1 text-xs text-spool"
+          >
+            Use detected: {access.detected_local}
+          </button>
+        )}
+        <label className="mt-3 block text-xs text-fog" htmlFor="access-remote">
+          Remote address (Tailscale, proxy…)
+        </label>
+        <input
+          id="access-remote"
+          type="url"
+          value={remoteUrl}
+          onChange={(e) => setRemoteUrl(e.target.value)}
+          placeholder={access?.detected_remote ?? "https://host.tailnet.ts.net"}
+          className="type-mono mt-1 w-full rounded-xl border border-hairline bg-house px-3 py-2.5 text-sm text-stub placeholder:text-fog/40"
+        />
+        {access?.detected_remote && access.detected_remote !== remoteUrl && (
+          <button
+            onClick={() => setRemoteUrl(access.detected_remote!)}
+            className="mt-1 text-xs text-spool"
+          >
+            Use detected: {access.detected_remote}
+          </button>
+        )}
+        <button onClick={saveAccess} className="mt-3 text-sm font-semibold text-spool">
+          Save addresses
+        </button>
+        {accessNote && <p className="mt-1.5 text-xs text-spool">{accessNote}</p>}
       </section>
 
       <section className="rounded-2xl bg-riser p-5">

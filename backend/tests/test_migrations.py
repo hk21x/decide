@@ -4,7 +4,7 @@ from decide import db, migrations
 def test_migration_ladder_applies_once(dbenv):
     conn = db.connect()
     version = conn.execute("PRAGMA user_version").fetchone()[0]
-    assert version == len(migrations.MIGRATIONS) == 2
+    assert version == len(migrations.MIGRATIONS)
 
     tables = {
         r[0]

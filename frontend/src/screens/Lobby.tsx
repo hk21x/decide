@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { JoinCodeBadge } from "../components/JoinCodeBadge";
+import { PushBell } from "../components/PushBell";
 import { api } from "../lib/api";
 import { describeFilters } from "../lib/format";
 import { getPid } from "../lib/session";
@@ -86,6 +87,8 @@ export function LobbyScreen() {
             <span className="type-mono text-stub/90">{session.deck_size}</span> films ·{" "}
             {describeFilters(session.filters)}
           </section>
+
+          <PushBell sessionId={sessionId} />
 
           <p className="mt-4 text-xs text-fog/70">
             No need to wait for each other — everyone swipes the same deck in the

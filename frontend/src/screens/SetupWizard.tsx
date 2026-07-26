@@ -314,7 +314,8 @@ export function SetupWizardScreen() {
                 <span>
                   {section.title}
                   <span className="type-mono ml-2 text-xs text-fog">
-                    {section.movie_count.toLocaleString("en-GB")} films
+                    {section.movie_count.toLocaleString("en-GB")}{" "}
+                    {section.type === "show" ? "series 📺" : "films"}
                   </span>
                 </span>
                 <input

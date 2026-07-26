@@ -23,6 +23,8 @@ class Settings:
     env_plex_token: str | None = None
     env_plex_sections: list[str] | None = None
     env_secret_key: str | None = None
+    env_local_url: str | None = None
+    env_remote_url: str | None = None
     enable_jobs: bool = True
     static_dir: Path | None = None
     incremental_interval_s: int = 6 * 3600
@@ -43,6 +45,8 @@ def load_settings() -> Settings:
         if sections_raw
         else None,
         env_secret_key=os.environ.get("SECRET_KEY") or None,
+        env_local_url=os.environ.get("LOCAL_URL") or None,
+        env_remote_url=os.environ.get("REMOTE_URL") or None,
         static_dir=Path(static) if static else None,
         art_cache_mb=int(os.environ.get("ART_CACHE_MB", "500")),
     )

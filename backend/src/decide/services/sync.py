@@ -28,12 +28,12 @@ INSERT INTO items (id, guid, imdb_id, tmdb_id, title, year, tagline, summary,
                    runtime_min, content_rating, audience_rating, genres_json,
                    directors_json, cast_json, collections_json, thumb, art,
                    view_count, last_viewed_at, added_at, updated_at, unusable,
-                   synced_at)
+                   synced_at, media_type, seasons)
 VALUES (:id, :guid, :imdb_id, :tmdb_id, :title, :year, :tagline, :summary,
         :runtime_min, :content_rating, :audience_rating, :genres_json,
         :directors_json, :cast_json, :collections_json, :thumb, :art,
         :view_count, :last_viewed_at, :added_at, :updated_at, :unusable,
-        :synced_at)
+        :synced_at, :media_type, :seasons)
 ON CONFLICT(id) DO UPDATE SET
     guid = excluded.guid, imdb_id = excluded.imdb_id, tmdb_id = excluded.tmdb_id,
     title = excluded.title, year = excluded.year, tagline = excluded.tagline,
@@ -45,7 +45,8 @@ ON CONFLICT(id) DO UPDATE SET
     thumb = excluded.thumb, art = excluded.art, view_count = excluded.view_count,
     last_viewed_at = excluded.last_viewed_at, added_at = excluded.added_at,
     updated_at = excluded.updated_at, unusable = excluded.unusable,
-    synced_at = excluded.synced_at
+    synced_at = excluded.synced_at, media_type = excluded.media_type,
+    seasons = excluded.seasons
 """
 
 
@@ -66,6 +67,8 @@ def _row(rec: MovieRecord, synced_at: int) -> dict:
         "directors_json": json.dumps(rec.directors),
         "cast_json": json.dumps(rec.cast),
         "collections_json": json.dumps(rec.collections),
+        "media_type": rec.media_type,
+        "seasons": rec.seasons,
         "thumb": rec.thumb,
         "art": rec.art,
         "view_count": rec.view_count,
