@@ -57,7 +57,7 @@
 
 <div align="center">
   <img src="images/decide-screenshot.jpg" alt="Swiping a film card" width="152">
-  <img src="images/decide-start-session.jpg" alt="Starting a session — moods, filters and deck size" width="152">
+  <img src="images/decide-start-session.jpg" alt="Starting a session - moods, filters and deck size" width="152">
   <img src="images/decide-share-code.jpg" alt="Sharing the join code and QR" width="152">
   <img src="images/decide-movie-selector.jpg" alt="Choosing between films" width="152">
   <img src="images/decide-final-round.jpg" alt="The Final Round crowning tonight's film" width="152">
@@ -69,22 +69,22 @@
 Movie night has a deadline, and "what shall we watch?" shouldn't eat half of
 it. **decide** turns the choice into a game: two to four people swipe through
 the same small deck of films from your Plex library; when everyone says
-"Tonight" to the same one, it's a match — and a ticket stub prints.
+"Tonight" to the same one, it's a match - and a ticket stub prints.
 
-* **Small decks, not endless scrolling.** Films **or whole series** — filter
+* **Small decks, not endless scrolling.** Films **or whole series** - filter
   by mood, runtime, rating, certificate, or deal from a Plex collection;
   swipe 20–50 cards, not 3,000.
 * **Together or apart.** Everyone swipes the same frozen deck in the same
   order, live on the sofa or hours apart on the train. Matches land the
-  moment you agree — with **push alerts** when you're not looking, and
+  moment you agree - with **push alerts** when you're not looking, and
   recent sessions waiting on the Home screen when you come back.
 * **It actually decides.** Too many matches? The **Final Round** runs them
-  head-to-head until one film is crowned — then open it in Plex, or send it
+  head-to-head until one film is crowned - then open it in Plex, or send it
   straight to the TV.
 * **Nights worth keeping.** Every session ends with a taste-compatibility
-  score ("You and Dee agreed on 7 of 30 — 23% tonight"), and stubs you keep
+  score ("You and Dee agreed on 7 of 30 - 23% tonight"), and stubs you keep
   live on in the album long after sessions expire.
-* **Private by design.** Your Plex token never leaves the server — every Plex
+* **Private by design.** Your Plex token never leaves the server - every Plex
   call, including artwork, is proxied by the backend. Once synced, it works
   on the LAN with no internet at all.
 * **Feels like an app.** Installable PWA with offline swiping that syncs back
@@ -111,12 +111,12 @@ affiliated with or endorsed by Plex, Inc.
 
 ## Getting Started
 
-decide runs as a single Docker container alongside your Plex Media Server —
+decide runs as a single Docker container alongside your Plex Media Server -
 one image, one port, one SQLite file.
 
 ### Prerequisites
 
-* Docker (or any OCI runtime) on a machine that can reach your Plex server —
+* Docker (or any OCI runtime) on a machine that can reach your Plex server -
   a Pi, NAS or home server on the same LAN is ideal
 * A Plex Media Server with at least one movie library
 
@@ -146,12 +146,12 @@ one image, one port, one SQLite file.
    ```
 
 3. Open `http://<host>:8080` and follow the setup wizard: sign in with Plex
-   (a 4-character code at [plex.tv/link](https://plex.tv/link) — decide never
+   (a 4-character code at [plex.tv/link](https://plex.tv/link) - decide never
    asks for your password), pick your server and film libraries, and let the
    first sync run.
 
 **Unraid:** a Community Applications template ships in
-[hk21x/unraid-templates](https://github.com/hk21x/unraid-templates) — once
+[hk21x/unraid-templates](https://github.com/hk21x/unraid-templates) - once
 accepted you'll find decide in the Apps tab; until then, the template XML
 works with Unraid's "Add Container → Template" as well.
 
@@ -159,24 +159,24 @@ works with Unraid's "Add Container → Template" as well.
 
 ## Usage
 
-1. **Start a session** — pick a mood (or fine-tune genres), a runtime cap, a
+1. **Start a session** - pick a mood (or fine-tune genres), a runtime cap, a
    minimum rating, a certificate ceiling for family nights, or a Plex
    collection to deal from. A live counter shows how many films match.
-2. **Share the code** — a six-character join code, a copyable link, and a
+2. **Share the code** - a six-character join code, a copyable link, and a
    **dual QR**: one for people on your Wi-Fi, one for remote friends on your
    Tailscale network (Settings → Access & sharing). Lost your place? Sessions
    reappear on Home, and rejoining never burns one of the four seats.
-3. **Swipe** — right means "I'd watch this tonight". Tap ⓘ for the synopsis,
+3. **Swipe** - right means "I'd watch this tonight". Tap ⓘ for the synopsis,
    cast and backdrop. Undo within five seconds if your thumb betrayed you.
-4. **Match** — unanimous right-swipes print a ticket stub in the shared
+4. **Match** - unanimous right-swipes print a ticket stub in the shared
    shortlist, along with how compatible your taste turned out to be tonight.
-5. **Crown one** — the **Final Round** puts the matches head-to-head; pass
+5. **Crown one** - the **Final Round** puts the matches head-to-head; pass
    the phone, argue, tap winners until one film is crowned for everyone.
    Open it in Plex, or play it on any Plex client the server can see.
-6. **Keep the stub** — kept stubs (and crowned winners) go to the 🎟 album,
+6. **Keep the stub** - kept stubs (and crowned winners) go to the 🎟 album,
    a ticket wallet of past movie nights that outlives the sessions.
 
-On iPhone or Android, open the site and **Add to Home Screen** — decide
+On iPhone or Android, open the site and **Add to Home Screen** - decide
 installs as an app, and swipes made offline sync back when you reconnect.
 There's a light theme in Settings if the auditorium look isn't yours.
 
@@ -184,7 +184,7 @@ There's a light theme in Settings if the auditorium look isn't yours.
 
 ## Configuration
 
-Everything is optional — the wizard covers the lot. Env vars exist for
+Everything is optional - the wizard covers the lot. Env vars exist for
 declarative setups:
 
 | Variable | Default | Purpose |
@@ -193,18 +193,18 @@ declarative setups:
 | `DATA_DIR` | `/data` | SQLite database + artwork cache |
 | `PUID` / `PGID` | `1000` | Run as this user/group |
 | `ART_CACHE_MB` | `500` | Artwork disk-cache cap |
-| `PLEX_URL` | — | Skip the wizard: server address |
-| `PLEX_TOKEN` | — | Skip the wizard: auth token |
-| `PLEX_SECTIONS` | — | Comma-separated movie section ids |
+| `PLEX_URL` | - | Skip the wizard: server address |
+| `PLEX_TOKEN` | - | Skip the wizard: auth token |
+| `PLEX_SECTIONS` | - | Comma-separated movie section ids |
 | `SECRET_KEY` | auto-generated | Cookie-signing key override |
 | `LOCAL_URL` | auto-detected | Join-QR address for the local network |
-| `REMOTE_URL` | — | Join-QR address for remote access (e.g. Tailscale) |
+| `REMOTE_URL` | - | Join-QR address for remote access (e.g. Tailscale) |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Deployment Notes
 
-decide uses a WebSocket at `/api/sessions/*/live` — make sure upgrades pass
+decide uses a WebSocket at `/api/sessions/*/live` - make sure upgrades pass
 through your reverse proxy.
 
 **Caddy** (WebSockets work out of the box):
@@ -228,27 +228,27 @@ location / {
 }
 ```
 
-**Remote access** is deliberately out of scope — bring whatever already works
+**Remote access** is deliberately out of scope - bring whatever already works
 for the rest of your self-hosted stack. [Tailscale](https://tailscale.com/kb/)
 is the easiest route if you have nothing yet.
 
 If your Plex server runs in Docker and LAN clients appear as remote
-(source-IP NAT), that's a Plex networking quirk, not a decide one — see the
+(source-IP NAT), that's a Plex networking quirk, not a decide one - see the
 [Plex forum thread on Docker and local network discovery](https://forums.plex.tv/t/plex-docker-container-sees-local-devices-as-remote/124882).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Roadmap
 
-- [x] Final Round — head-to-head bracket that crowns tonight's film
+- [x] Final Round - head-to-head bracket that crowns tonight's film
 - [x] Taste-compatibility stats
-- [x] The stub album — kept tickets that outlive sessions
+- [x] The stub album - kept tickets that outlive sessions
 - [x] Decks from Plex collections
 - [x] Play the crowned film on a Plex client (TV, etc.)
-- [x] Series-level TV decks (swipe whole shows — never episodes)
+- [x] Series-level TV decks (swipe whole shows - never episodes)
 - [x] Recent sessions + rejoin, match push alerts, Tailscale dual-QR
 - [ ] Jellyfin support (media access already sits behind a `MediaSource`
-      protocol — a `JellyfinSource` drops in without touching the rest)
+      protocol - a `JellyfinSource` drops in without touching the rest)
 - [ ] Per-person Plex sign-in, so "unwatched" means *your* unwatched
 - [ ] Save the shortlist to a Plex playlist
 
@@ -262,9 +262,9 @@ more than four people, recommendations, or accounts.
 
 ## Development
 
-No build step magic — a Python backend and a Vite frontend.
+No build step magic - a Python backend and a Vite frontend.
 
-Backend (Python 3.12, FastAPI, SQLite — managed with [uv](https://docs.astral.sh/uv/)):
+Backend (Python 3.12, FastAPI, SQLite - managed with [uv](https://docs.astral.sh/uv/)):
 
 ```sh
 cd backend
@@ -312,7 +312,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-Harry — [@hk21x](https://github.com/hk21x)
+Harry - [@hk21x](https://github.com/hk21x)
 
 Project Link: [https://github.com/hk21x/decide](https://github.com/hk21x/decide)
 
@@ -336,7 +336,7 @@ for now) is always responsible for pulling the trigger on any committed
 change, and takes responsibility for any actions.
 
 It's still a one-person hobby project rather than an audited product. By
-design, there is no user authentication — anyone who can reach the port can
+design, there is no user authentication - anyone who can reach the port can
 start a session and browse your library metadata. Run it the way you'd run
 any other self-hosted service: on your LAN or behind a tailnet, not exposed
 to the internet.
