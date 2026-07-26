@@ -49,13 +49,20 @@
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
+    <li><a href="#disclaimer">Disclaimer</a></li>
   </ol>
 </details>
 
 ## About The Project
 
 <div align="center">
-  <img src="images/decide-screenshot.png" alt="decide running on a phone — swiping a film card" width="320">
+  <img src="images/decide-screenshot.png" alt="Swiping a film card" width="152">
+  <img src="images/decide-start-session.jpg" alt="Starting a session — moods, filters and deck size" width="152">
+  <img src="images/decide-share-code.jpg" alt="Sharing the join code and QR" width="152">
+  <img src="images/decide-movie-selector.jpg" alt="Choosing between films" width="152">
+  <img src="images/decide-final-round.jpg" alt="The Final Round crowning tonight's film" width="152">
+  <br />
+  <sub>Swipe · start a session · share the code · pick · the Final Round crowns one</sub>
 </div>
 <br />
 
@@ -316,6 +323,23 @@ Project Link: [https://github.com/hk21x/decide](https://github.com/hk21x/decide)
 * [python-plexapi](https://github.com/pkkid/python-plexapi)
 * [Fontsource](https://fontsource.org/) (Archivo, Public Sans, Space Mono)
 * [Best-README-Template](https://github.com/othneildrew/Best-README-Template)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Disclaimer
+
+decide was built with support from AI coding assistants. Every change has
+been reviewed by a human and will continue to be, tested thoroughly before
+each merge. This project was built for my partner and me, before realising
+some of my friends using Plex might benefit from it too. A human (just me,
+for now) is always responsible for pulling the trigger on any committed
+change, and takes responsibility for any actions.
+
+It's still a one-person hobby project rather than an audited product. By
+design, there is no user authentication — anyone who can reach the port can
+start a session and browse your library metadata. Run it the way you'd run
+any other self-hosted service: on your LAN or behind a tailnet, not exposed
+to the internet.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
