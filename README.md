@@ -56,7 +56,7 @@
 ## About The Project
 
 <div align="center">
-  <img src="images/decide-screenshot.png" alt="Swiping a film card" width="152">
+  <img src="images/decide-screenshot.jpg" alt="Swiping a film card" width="152">
   <img src="images/decide-start-session.jpg" alt="Starting a session — moods, filters and deck size" width="152">
   <img src="images/decide-share-code.jpg" alt="Sharing the join code and QR" width="152">
   <img src="images/decide-movie-selector.jpg" alt="Choosing between films" width="152">
