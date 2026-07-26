@@ -229,3 +229,8 @@ export interface AccessConfig {
   detected_local: string | null;
   detected_remote: string | null;
 }
+
+export interface FinalClaim {
+  mine: boolean;
+  holder_name: string | null;
+}

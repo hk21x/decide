@@ -296,6 +296,11 @@ class RejoinRequest(BaseModel):
     participant_id: str
 
 
+class FinalClaim(BaseModel):
+    mine: bool
+    holder_name: str | None = None
+
+
 class VapidKey(BaseModel):
     public_key: str
 

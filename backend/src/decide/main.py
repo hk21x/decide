@@ -76,6 +76,7 @@ async def lifespan(app: FastAPI):
 
     app.state.pins = {}
     app.state.discovered = {}
+    app.state.final_locks = {}
     app.state.events = ConnectionManager()
     app.state.source_factory = _make_source
     app.state.sync = SyncCoordinator(lambda: app.state.source_factory())

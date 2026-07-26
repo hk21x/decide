@@ -278,3 +278,54 @@ def test_push_vapid_and_subscription(client):
     # Unauthenticated subscription refused.
     refused = test_client.post(f"/api/sessions/{sid}/push", json=sub)
     assert refused.status_code == 401
+
+
+def test_final_round_lock(client, monkeypatch):
+    test_client, app = client
+    sid, host, guest = _session_with_two(test_client)
+
+    # Host takes the lock; guest is told who has it.
+    assert test_client.post(f"/api/sessions/{sid}/final/claim", headers=host).json() == {
+        "mine": True,
+        "holder_name": "Harry",
+    }
+    blocked = test_client.post(f"/api/sessions/{sid}/final/claim", headers=guest).json()
+    assert blocked == {"mine": False, "holder_name": "Harry"}
+
+    # Heartbeat re-claim extends silently; release fires final_released.
+    with test_client.websocket_connect(f"/api/sessions/{sid}/live", headers=guest) as ws:
+        assert test_client.post(
+            f"/api/sessions/{sid}/final/claim", headers=host
+        ).json()["mine"] is True
+        test_client.delete(f"/api/sessions/{sid}/final/claim", headers=host)
+        assert ws.receive_json()["type"] == "final_released"
+
+    # Lock free again — guest can take it.
+    assert test_client.post(
+        f"/api/sessions/{sid}/final/claim", headers=guest
+    ).json()["mine"] is True
+
+    # Expiry: a stale lock is claimable by the other side.
+    import decide.routers.sessions as sessions_module
+
+    monkeypatch.setattr(sessions_module, "FINAL_LOCK_TTL_S", 0.0)
+    test_client.post(f"/api/sessions/{sid}/final/claim", headers=guest)
+    assert test_client.post(
+        f"/api/sessions/{sid}/final/claim", headers=host
+    ).json()["mine"] is True
+
+
+def test_crown_clears_final_lock(client):
+    test_client, app = client
+    sid, host, guest = _session_with_two(test_client)
+    deck_items = test_client.get(f"/api/sessions/{sid}/deck", headers=host).json()["items"]
+    target = deck_items[0]["id"]
+    _swipe(test_client, sid, host, target, 1)
+    _swipe(test_client, sid, guest, target, 1)
+
+    test_client.post(f"/api/sessions/{sid}/final/claim", headers=host)
+    test_client.post(f"/api/sessions/{sid}/crown", json={"item_id": target}, headers=host)
+    # Lock gone: guest could claim immediately (nothing left to run, but clean).
+    assert test_client.post(
+        f"/api/sessions/{sid}/final/claim", headers=guest
+    ).json()["mine"] is True

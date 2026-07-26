@@ -1,6 +1,7 @@
 import type {
   AccessConfig,
   AlbumEntry,
+  FinalClaim,
   CacheStats,
   CreateSessionResponse,
   DeckFilters,
@@ -96,6 +97,12 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ participant_id: participantId }),
     }),
+
+  claimFinal: (sessionId: string) =>
+    request<FinalClaim>(`/api/sessions/${sessionId}/final/claim`, { method: "POST" }),
+
+  releaseFinal: (sessionId: string) =>
+    request<FinalClaim>(`/api/sessions/${sessionId}/final/claim`, { method: "DELETE" }),
 
   vapidKey: () => request<{ public_key: string }>("/api/push/vapid"),
 

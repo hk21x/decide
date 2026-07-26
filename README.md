@@ -170,9 +170,11 @@ works with Unraid's "Add Container → Template" as well.
    cast and backdrop. Undo within five seconds if your thumb betrayed you.
 4. **Match** - unanimous right-swipes print a ticket stub in the shared
    shortlist, along with how compatible your taste turned out to be tonight.
-5. **Crown one** - the **Final Round** puts the matches head-to-head; pass
-   the phone, argue, tap winners until one film is crowned for everyone.
-   Open it in Plex, or play it on any Plex client the server can see.
+5. **Crown one** - the **Final Round** puts the matches head-to-head on
+   *one* phone; pass it round, argue, tap winners. Everyone else sees "🍿
+   someone's running the Final Round" and gets the verdict the moment it's
+   crowned. Open it in Plex, or play it on any Plex client the server can
+   see.
 6. **Keep the stub** - kept stubs (and crowned winners) go to the 🎟 album,
    a ticket wallet of past movie nights that outlives the sessions.
 

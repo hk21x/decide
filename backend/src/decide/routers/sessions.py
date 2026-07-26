@@ -18,6 +18,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from .. import config, db, security
 from ..models import (
     CreateSessionRequest,
+    FinalClaim,
     RejoinRequest,
     CreateSessionResponse,
     CrownRequest,
@@ -49,6 +50,9 @@ router = APIRouter(prefix="/api/sessions", tags=["sessions"])
 SESSION_TTL_S = 48 * 3600
 MAX_PARTICIPANTS = 4
 COOKIE_MAX_AGE_S = 7 * 86400
+# The Final Round runs on ONE device (pass the phone); the runner holds a
+# heartbeat lock and everyone else spectates until the crown lands.
+FINAL_LOCK_TTL_S = 25
 
 
 # ---------------------------------------------------------------- helpers
@@ -400,6 +404,53 @@ async def rejoin_session(session_id: str, body: RejoinRequest, response: Respons
     )
 
 
+@router.post("/{session_id}/final/claim", response_model=FinalClaim)
+async def claim_final(session_id: str, request: Request) -> FinalClaim:
+    """Acquire (or heartbeat-extend) the Final Round runner's lock."""
+    participant = await _current_participant(session_id, request)
+    locks = request.app.state.final_locks
+    now = time.time()
+    lock = locks.get(session_id)
+    if (
+        lock
+        and lock["expires"] > now
+        and lock["participant_id"] != participant["id"]
+    ):
+        return FinalClaim(mine=False, holder_name=lock["display_name"])
+
+    freshly_acquired = not (
+        lock and lock["participant_id"] == participant["id"] and lock["expires"] > now
+    )
+    locks[session_id] = {
+        "participant_id": participant["id"],
+        "display_name": participant["display_name"],
+        "expires": now + FINAL_LOCK_TTL_S,
+    }
+    if freshly_acquired:
+        await request.app.state.events.broadcast(
+            session_id,
+            {
+                "type": "final_started",
+                "participant_id": participant["id"],
+                "display_name": participant["display_name"],
+            },
+        )
+    return FinalClaim(mine=True, holder_name=participant["display_name"])
+
+
+@router.delete("/{session_id}/final/claim", response_model=FinalClaim)
+async def release_final(session_id: str, request: Request) -> FinalClaim:
+    participant = await _current_participant(session_id, request)
+    locks = request.app.state.final_locks
+    lock = locks.get(session_id)
+    if lock and lock["participant_id"] == participant["id"]:
+        del locks[session_id]
+        await request.app.state.events.broadcast(
+            session_id, {"type": "final_released"}
+        )
+    return FinalClaim(mine=False)
+
+
 @router.get("/{session_id}/deck", response_model=DeckResponse)
 async def get_deck(session_id: str, request: Request):
     await _current_participant(session_id, request)
@@ -561,6 +612,7 @@ async def crown(session_id: str, body: CrownRequest, request: Request):
         raise HTTPException(
             status_code=400, detail="Only a matched film can be crowned."
         )
+    request.app.state.final_locks.pop(session_id, None)
     await request.app.state.events.broadcast(
         session_id, {"type": "crowned", "item_id": body.item_id}
     )

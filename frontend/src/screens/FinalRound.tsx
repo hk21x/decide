@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { PosterImg } from "../components/PosterImg";
@@ -7,23 +7,46 @@ import { api } from "../lib/api";
 import { formatMeta } from "../lib/format";
 import { openInPlex } from "../lib/plexLink";
 import type { DeckItem, PlayerEntry } from "../lib/types";
+import { sessionSocket } from "../lib/ws";
 
-function shuffle<T>(items: T[]): T[] {
+/** Seeded Fisher–Yates: every device dealing this session's Final Round
+ * sees the same bracket in the same order (FNV-1a hash + mulberry32). */
+function seededShuffle<T>(items: T[], seed: string): T[] {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  const rand = () => {
+    h = (h + 0x6d2b79f5) >>> 0;
+    let t = h;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
   const out = [...items];
   for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rand() * (i + 1));
     [out[i], out[j]] = [out[j], out[i]];
   }
   return out;
 }
 
-/** The Final Round: matched films go head-to-head on one shared phone until
- * one is crowned. The crown is broadcast, so everyone's screens agree. */
+const HEARTBEAT_MS = 10_000;
+
+type Role = "loading" | "runner" | "spectator";
+
+/** The Final Round runs on ONE device — the runner holds a heartbeat lock,
+ * the bracket order is seeded by the session id, and the crown broadcasts,
+ * so every phone agrees on both the duels and the verdict. */
 export function FinalRoundScreen() {
   const { sessionId = "" } = useParams();
   const navigate = useNavigate();
   const reduced = useReducedMotion();
+  const socket = useMemo(() => sessionSocket(sessionId), [sessionId]);
 
+  const [role, setRole] = useState<Role>("loading");
+  const [holderName, setHolderName] = useState<string | null>(null);
   const [round, setRound] = useState<DeckItem[]>([]);
   const [winners, setWinners] = useState<DeckItem[]>([]);
   const [duelIndex, setDuelIndex] = useState(0);
@@ -33,16 +56,52 @@ export function FinalRoundScreen() {
   const [playerChoice, setPlayerChoice] = useState<string>("");
   const [note, setNote] = useState<string | null>(null);
   const [kept, setKept] = useState(false);
+  const allItems = useRef<Map<string, DeckItem>>(new Map());
+  const roleRef = useRef<Role>("loading");
+  roleRef.current = role;
 
+  const crownById = useCallback((itemId: string) => {
+    const item = allItems.current.get(itemId);
+    if (item) setChampion(item);
+  }, []);
+
+  // Initial load: matches (everyone needs them to resolve the champion),
+  // then either the runner's bracket or the spectator's couch.
   useEffect(() => {
-    api.matches(sessionId).then((m) => {
+    let cancelled = false;
+    (async () => {
+      const [m, summary] = await Promise.all([
+        api.matches(sessionId),
+        api.sessionSummary(sessionId),
+      ]);
+      if (cancelled) return;
       const items = m.matches.map((entry) => entry.item);
+      allItems.current = new Map(items.map((item) => [item.id, item]));
+
+      if (summary.crowned_item_id) {
+        crownById(summary.crowned_item_id); // verdict already in
+        return;
+      }
       if (items.length < 2) {
         navigate(`/session/${sessionId}/matches`, { replace: true });
         return;
       }
-      setRound(shuffle(items));
-    });
+      const claim = await api.claimFinal(sessionId);
+      if (cancelled) return;
+      if (claim.mine) {
+        setRound(seededShuffle(items, sessionId));
+        setRole("runner");
+      } else {
+        setHolderName(claim.holder_name);
+        setRole("spectator");
+      }
+    })().catch(() => setNote("Couldn't load the Final Round."));
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId, navigate, crownById]);
+
+  useEffect(() => {
     api.setupStatus().then((s) => setMachineId(s.machine_id)).catch(() => {});
     api
       .players()
@@ -51,7 +110,43 @@ export function FinalRoundScreen() {
         if (p.players.length === 1) setPlayerChoice(p.players[0].id);
       })
       .catch(() => {});
-  }, [sessionId, navigate]);
+  }, []);
+
+  // Live events: the crown ends it for everyone; lock churn updates the couch.
+  useEffect(() => {
+    const off = socket.subscribe((event) => {
+      if (event.type === "crowned") {
+        crownById(event.item_id as string);
+      } else if (event.type === "final_started" && roleRef.current === "spectator") {
+        setHolderName(event.display_name as string);
+      } else if (event.type === "final_released" && roleRef.current === "spectator") {
+        // Runner walked away — try to take over.
+        void api.claimFinal(sessionId).then((claim) => {
+          if (claim.mine) {
+            const items = [...allItems.current.values()];
+            setRound(seededShuffle(items, sessionId));
+            setWinners([]);
+            setDuelIndex(0);
+            setRole("runner");
+          } else {
+            setHolderName(claim.holder_name);
+          }
+        });
+      }
+    });
+    return off;
+  }, [socket, sessionId, crownById]);
+
+  // Runner keeps the lock warm; releases it on the way out (unless crowned —
+  // the server already cleared it).
+  useEffect(() => {
+    if (role !== "runner") return;
+    const timer = setInterval(() => void api.claimFinal(sessionId), HEARTBEAT_MS);
+    return () => {
+      clearInterval(timer);
+      if (!champion) void api.releaseFinal(sessionId).catch(() => {});
+    };
+  }, [role, sessionId, champion]);
 
   const duel = useMemo(() => {
     const a = round[duelIndex * 2];
@@ -59,11 +154,8 @@ export function FinalRoundScreen() {
     return a && b ? ([a, b] as const) : null;
   }, [round, duelIndex]);
 
-  // A lone film at the end of a round gets a bye into the next.
   const bye = round.length % 2 === 1 ? round[round.length - 1] : null;
-
-  const roundLabel =
-    round.length <= 2 ? "The Final" : `Round of ${round.length}`;
+  const roundLabel = round.length <= 2 ? "The Final" : `Round of ${round.length}`;
 
   async function pick(winner: DeckItem) {
     const nextWinners = [...winners, winner];
@@ -123,7 +215,7 @@ export function FinalRoundScreen() {
           className="w-full"
         >
           <p className="type-mono text-xs uppercase tracking-[0.3em] text-bulb">
-            👑 Tonight's film
+            👑 Tonight's {champion.media_type === "show" ? "series" : "film"}
           </p>
           <div className="mx-auto mt-4 w-56">
             <PosterImg
@@ -191,6 +283,29 @@ export function FinalRoundScreen() {
     );
   }
 
+  if (role === "spectator") {
+    return (
+      <div className="mx-auto flex min-h-dvh max-w-sm flex-col items-center justify-center px-6 text-center">
+        <p className="text-4xl" aria-hidden>
+          🍿
+        </p>
+        <h1 className="type-display mt-4 text-xl text-stub">
+          {holderName ?? "Someone"} is running the Final Round
+        </h1>
+        <p className="mt-2 text-sm text-fog">
+          One phone, everyone arguing at it — that's the rules. The verdict
+          lands here the moment it's crowned.
+        </p>
+        <Link
+          to={`/session/${sessionId}/matches`}
+          className="mt-8 text-sm font-semibold text-spool"
+        >
+          Back to matches
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto flex min-h-dvh max-w-sm flex-col px-5 pb-10 pt-6">
       <header className="mb-4 flex items-baseline justify-between">
@@ -201,7 +316,7 @@ export function FinalRoundScreen() {
           ‹ Matches
         </Link>
         <span className="type-mono text-xs uppercase tracking-[0.25em] text-fog">
-          {roundLabel}
+          {role === "loading" ? "…" : roundLabel}
         </span>
       </header>
 
@@ -209,6 +324,7 @@ export function FinalRoundScreen() {
       <p className="mt-1 text-sm text-fog">
         Pass the phone round, argue it out, tap the winner.
       </p>
+      {note && <p className="mt-2 text-sm text-bulb">{note}</p>}
 
       <AnimatePresence mode="wait">
         {duel && (
